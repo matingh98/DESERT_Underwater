@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Regents of the SIGNET lab, University of Padova.
+// Copyright (c) 2017 Regents of the SIGNET lab, University of Padova.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,49 +25,151 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
 
 /**
- * @file   uwranging_tdma/initlib.cpp
- * @author Antonio Montanari
+ * @file   data_link/uwpolling/initlib.cpp
+ * @author Federico Favaro
  * @version 1.0.0
  *
- * @brief Provides the initializazion of the uwranging_tdma libraries
+ * \brief Provides the initialization of the uwpolling libraries
+ *
  */
 
 #include <tclcl.h>
-#include "uwranging_tdma_hdr.h"
+#include "uwpolling_AUV.h"
+#include "uwpolling_NODE.h"
+#include "uwpolling_SINK.h"
+#include "uwpolling_cmn_hdr.h"
+#include "sap.h"
+#include "packet.h"
 
-int hdr_ranging_tdma::offset_ = 0;
-packet_t PT_UWRANGING_TDMA;
+int hdr_PROBE::offset_ = 0;
+int hdr_TRIGGER::offset_ = 0;
+int hdr_POLL::offset_ = 0;
+int hdr_AUV_MULE::offset_ = 0;
+int hdr_ACK_SINK::offset_ = 0;
+int hdr_PROBE_SINK::offset_ = 0;
+
+packet_t PT_TRIGGER;
+packet_t PT_PROBE;
+packet_t PT_PROBE_SINK;
+packet_t PT_POLL;
+packet_t PT_AUV_MULE;
+packet_t PT_ACK_SINK;
 
 /**
- * Class that describe the Header of a PT_UWRANGING_TDMA packet
+ * Class that describe the Header of PROBE Packet
  */
-static class UwRangingTDMAHeaderClass : public PacketHeaderClass
+static class ProbeHeaderClass : public PacketHeaderClass
 {
 public:
 	/**
 	 * Constructor of the class
 	 */
-	UwRangingTDMAHeaderClass()
-		: PacketHeaderClass("PacketHeader/UWRANGING_TDMA", sizeof(hdr_ranging_tdma))
+	ProbeHeaderClass()
+		: PacketHeaderClass("PacketHeader/PROBE", sizeof(hdr_PROBE))
 	{
 		this->bind();
-		bind_offset(&hdr_ranging_tdma::offset_);
+		bind_offset(&hdr_PROBE::offset_);
 	}
-} class_hdr_ranging_tdma;
+} class_hdr_PROBE;
 
+/**
+ * Class that describe the Header of TRIGGER Packet
+ */
+static class TriggerHeaderClass : public PacketHeaderClass
+{
+public:
+	/**
+	 * Constructor of the class
+	 */
+	TriggerHeaderClass()
+		: PacketHeaderClass("PacketHeader/TRIGGER", sizeof(hdr_TRIGGER))
+	{
+		this->bind();
+		bind_offset(&hdr_TRIGGER::offset_);
+	}
+} class_hdr_TRIGGER;
 
+/**
+ * Class that describe the Header of POLL Packet
+ */
+static class PollHeaderClass : public PacketHeaderClass
+{
+public:
+	/**
+	 * Constructor of the class
+	 */
+	PollHeaderClass()
+		: PacketHeaderClass("PacketHeader/POLL", sizeof(hdr_POLL))
+	{
+		this->bind();
+		bind_offset(&hdr_POLL::offset_);
+	}
+} class_hdr_POLL;
 
+/**
+ * Class that describe the Header of AUV_MULEt
+ */
+static class AuvMuleHeaderClass : public PacketHeaderClass
+{
+public:
+	/**
+	 * Constructor of the class
+	 */
+	AuvMuleHeaderClass()
+		: PacketHeaderClass("PacketHeader/AUV_MULE", sizeof(hdr_AUV_MULE))
+	{
+		this->bind();
+		bind_offset(&hdr_AUV_MULE::offset_);
+	}
+} class_hdr_AUV_MULE;
 
-extern EmbeddedTcl Uwranging_tdmaTclCode;
+/**
+ * Class that describe the Header of ACK sent by the sink
+ */
+static class AckSinkHeaderClass : public PacketHeaderClass
+{
+public:
+	/**
+	 * Constructor of the class
+	 */
+	AckSinkHeaderClass()
+		: PacketHeaderClass("PacketHeader/ACK_SINK", sizeof(hdr_ACK_SINK))
+	{
+		this->bind();
+		bind_offset(&hdr_ACK_SINK::offset_);
+	}
+} class_hdr_ACK_SINK;
+
+/**
+ * Class that describe the Header of PROBE_SINK Packet
+ */
+static class ProbeSinkHeaderClass : public PacketHeaderClass
+{
+public:
+	/**
+	 * Constructor of the class
+	 */
+	ProbeSinkHeaderClass()
+		: PacketHeaderClass("PacketHeader/PROBE_SINK", sizeof(hdr_PROBE_SINK))
+	{
+		this->bind();
+		bind_offset(&hdr_PROBE_SINK::offset_);
+	}
+} class_hdr_PROBE_SINK;
+
+extern EmbeddedTcl uwpolling_default;
 
 extern "C" int
-Uwranging_tdma_Init()
+Uwpolling_Init()
 {
-	PT_UWRANGING_TDMA = p_info::addPacket("UWRANGING_TDMA");
-	Uwranging_tdmaTclCode.load();
+	PT_PROBE = p_info::addPacket("UWPOLLING/PROBE");
+	PT_TRIGGER = p_info::addPacket("UWPOLLING/TRIGGER");
+	PT_POLL = p_info::addPacket("UWPOLLING/POLL");
+	PT_AUV_MULE = p_info::addPacket("UWPOLLING/AUV_MULE");
+	PT_ACK_SINK =p_info::addPacket("UWPOLLING/ACK_SINK");
+	PT_PROBE_SINK = p_info::addPacket("UWPOLLING/PROBE_SINK");
+	uwpolling_default.load();
 	return 0;
 }
-
