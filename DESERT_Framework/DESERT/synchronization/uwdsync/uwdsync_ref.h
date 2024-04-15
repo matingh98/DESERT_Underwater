@@ -123,272 +123,272 @@ protected:
 		UWPOLLING_ACK_PKT
 	};
 
-	/**< Reason for the changing of the state */
-	enum UWPOLLING_SINK_REASON {
-		UWPOLLING_SINK_REASON_RX_DATA,
-		UWPOLLING_SINK_REASON_RX_TRIGGER,
-		UWPOLLING_SINK_REASON_PKT_ERROR,
-		UWPOLLING_SINK_REASON_TX_PROBE,
-		UWPOLLING_SINK_REASON_TX_ACK,
-		UWPOLLING_SINK_REASON_BACKOFF_TIMER_EXPIRED,
-		UWPOLLING_SINK_REASON_RX_DATA_TIMER_EXPIRED,
-		UWPOLLING_SINK_REASON_NOT_SET,
-		UWPOLLING_SINK_REASON_MAX_DATA_RECEIVED,
-		UWPOLLING_SINK_REASON_WRONG_TYPE,
-		UWPOLLING_SINK_REASON_WRONG_RECEIVER,
-		UWPOLLING_SINK_REASON_WRONG_STATE,
-	};
+	// /**< Reason for the changing of the state */
+	// enum UWPOLLING_SINK_REASON {
+	// 	UWPOLLING_SINK_REASON_RX_DATA,
+	// 	UWPOLLING_SINK_REASON_RX_TRIGGER,
+	// 	UWPOLLING_SINK_REASON_PKT_ERROR,
+	// 	UWPOLLING_SINK_REASON_TX_PROBE,
+	// 	UWPOLLING_SINK_REASON_TX_ACK,
+	// 	UWPOLLING_SINK_REASON_BACKOFF_TIMER_EXPIRED,
+	// 	UWPOLLING_SINK_REASON_RX_DATA_TIMER_EXPIRED,
+	// 	UWPOLLING_SINK_REASON_NOT_SET,
+	// 	UWPOLLING_SINK_REASON_MAX_DATA_RECEIVED,
+	// 	UWPOLLING_SINK_REASON_WRONG_TYPE,
+	// 	UWPOLLING_SINK_REASON_WRONG_RECEIVER,
+	// 	UWPOLLING_SINK_REASON_WRONG_STATE,
+	// };
 
-	/**< Status of the timer */
-	enum UWPOLLING_TIMER_STATUS {
-		UWPOLLING_IDLE = 1,
-		UWPOLLING_RUNNING,
-		UWPOLLING_FROZEN,
-		UWPOLLING_EXPIRED
-	};
+	// /**< Status of the timer */
+	// enum UWPOLLING_TIMER_STATUS {
+	// 	UWPOLLING_IDLE = 1,
+	// 	UWPOLLING_RUNNING,
+	// 	UWPOLLING_FROZEN,
+	// 	UWPOLLING_EXPIRED
+	// };
 
-	/**
-	 * Class that describes the timer in the SINK
-	 */
-	class Uwpolling_SINK_Timer : public TimerHandler
-	{
-	public:
-		/**
-		 * Constructor of the Uwpolling_SINK_Timer class
-		 * @param Uwpolling_SINK* a pointer to an object of type Uwpolling_AUV
-		 */
-		Uwpolling_SINK_Timer(Uwpolling_SINK *m)
-			: TimerHandler()
-			, start_time(0.0)
-			, left_duration(0.0)
-			, counter(0)
-			, module(m)
-			, timer_status(UWPOLLING_IDLE)
-		{
-			assert(m != NULL);
-		}
+	// /**
+	//  * Class that describes the timer in the SINK
+	//  */
+	// class Uwpolling_SINK_Timer : public TimerHandler
+	// {
+	// public:
+	// 	/**
+	// 	 * Constructor of the Uwpolling_SINK_Timer class
+	// 	 * @param Uwpolling_SINK* a pointer to an object of type Uwpolling_AUV
+	// 	 */
+	// 	Uwpolling_SINK_Timer(Uwpolling_SINK *m)
+	// 		: TimerHandler()
+	// 		, start_time(0.0)
+	// 		, left_duration(0.0)
+	// 		, counter(0)
+	// 		, module(m)
+	// 		, timer_status(UWPOLLING_IDLE)
+	// 	{
+	// 		assert(m != NULL);
+	// 	}
 
-		/**
-		 * Destructor of the Uwpolling_SINK_Timer class
-		 */
-		virtual ~Uwpolling_SINK_Timer()
-		{
-		}
+	// 	/**
+	// 	 * Destructor of the Uwpolling_SINK_Timer class
+	// 	 */
+	// 	virtual ~Uwpolling_SINK_Timer()
+	// 	{
+	// 	}
 
-		/**
-		 * Freeze the timer
-		 */
-		virtual void
-		freeze()
-		{
-			assert(timer_status == UWPOLLING_RUNNING);
-			left_duration -= (NOW - start_time);
-			if (left_duration <= 0.0) {
-				left_duration = module->mac2phy_delay_;
-			}
-			force_cancel();
-			timer_status = UWPOLLING_FROZEN;
-		}
+	// 	/**
+	// 	 * Freeze the timer
+	// 	 */
+	// 	virtual void
+	// 	freeze()
+	// 	{
+	// 		assert(timer_status == UWPOLLING_RUNNING);
+	// 		left_duration -= (NOW - start_time);
+	// 		if (left_duration <= 0.0) {
+	// 			left_duration = module->mac2phy_delay_;
+	// 		}
+	// 		force_cancel();
+	// 		timer_status = UWPOLLING_FROZEN;
+	// 	}
 
-		/**
-		 * unFreeze is used to resume the timer starting from the point where it
-		 * was freezed
-		 */
-		virtual void
-		unFreeze()
-		{
-			assert(timer_status == UWPOLLING_FROZEN);
-			start_time = NOW;
-			assert(left_duration > 0);
-			sched(left_duration);
-			timer_status = UWPOLLING_RUNNING;
-		}
+	// 	/**
+	// 	 * unFreeze is used to resume the timer starting from the point where it
+	// 	 * was freezed
+	// 	 */
+	// 	virtual void
+	// 	unFreeze()
+	// 	{
+	// 		assert(timer_status == UWPOLLING_FROZEN);
+	// 		start_time = NOW;
+	// 		assert(left_duration > 0);
+	// 		sched(left_duration);
+	// 		timer_status = UWPOLLING_RUNNING;
+	// 	}
 
-		/**
-		 * stops the timer
-		 */
-		virtual void
-		stop()
-		{
-			timer_status = UWPOLLING_IDLE;
-			force_cancel();
-		}
+	// 	/**
+	// 	 * stops the timer
+	// 	 */
+	// 	virtual void
+	// 	stop()
+	// 	{
+	// 		timer_status = UWPOLLING_IDLE;
+	// 		force_cancel();
+	// 	}
 
-		/**
-		 * Schedules a timer
-		 * @param double the duration of the timer
-		 */
-		virtual void
-		schedule(double val)
-		{
-			start_time = NOW;
-			left_duration = val;
-			timer_status = UWPOLLING_RUNNING;
-			resched(val);
-		}
+	// 	/**
+	// 	 * Schedules a timer
+	// 	 * @param double the duration of the timer
+	// 	 */
+	// 	virtual void
+	// 	schedule(double val)
+	// 	{
+	// 		start_time = NOW;
+	// 		left_duration = val;
+	// 		timer_status = UWPOLLING_RUNNING;
+	// 		resched(val);
+	// 	}
 
-		/**
-		 * Checks if the timer is IDLE
-		 * @return <i>true</i> or <i>false</i>
-		 */
-		bool
-		isIdle()
-		{
-			return (timer_status == UWPOLLING_IDLE);
-		}
+	// 	/**
+	// 	 * Checks if the timer is IDLE
+	// 	 * @return <i>true</i> or <i>false</i>
+	// 	 */
+	// 	bool
+	// 	isIdle()
+	// 	{
+	// 		return (timer_status == UWPOLLING_IDLE);
+	// 	}
 
-		/**
-		 * Checks if the timer is RUNNING
-		 * @return <i>true</i> or <i>false</i>
-		 */
-		bool
-		isRunning()
-		{
-			return (timer_status == UWPOLLING_RUNNING);
-		}
+	// 	/**
+	// 	 * Checks if the timer is RUNNING
+	// 	 * @return <i>true</i> or <i>false</i>
+	// 	 */
+	// 	bool
+	// 	isRunning()
+	// 	{
+	// 		return (timer_status == UWPOLLING_RUNNING);
+	// 	}
 
-		/**
-		 * Checks if the timer is EXPIRED
-		 * @return <i>true</i> or <i>false</i>
-		 */
-		bool
-		isExpired()
-		{
-			return (timer_status == UWPOLLING_EXPIRED);
-		}
+	// 	/**
+	// 	 * Checks if the timer is EXPIRED
+	// 	 * @return <i>true</i> or <i>false</i>
+	// 	 */
+	// 	bool
+	// 	isExpired()
+	// 	{
+	// 		return (timer_status == UWPOLLING_EXPIRED);
+	// 	}
 
-		/**
-		 * Checks if the timer is FROZEN
-		 * @return <i>true</i> or <i>false</i>
-		 */
-		bool
-		isFrozen()
-		{
-			return (timer_status == UWPOLLING_FROZEN);
-		}
+	// 	/**
+	// 	 * Checks if the timer is FROZEN
+	// 	 * @return <i>true</i> or <i>false</i>
+	// 	 */
+	// 	bool
+	// 	isFrozen()
+	// 	{
+	// 		return (timer_status == UWPOLLING_FROZEN);
+	// 	}
 
-		/**
-		 * Checks if the timer is ACTIVE
-		 * @return <i>true</i> or <i>false</i>
-		 */
-		bool
-		isActive()
-		{
-			return (timer_status == UWPOLLING_FROZEN ||
-					timer_status == UWPOLLING_RUNNING);
-		}
+	// 	/**
+	// 	 * Checks if the timer is ACTIVE
+	// 	 * @return <i>true</i> or <i>false</i>
+	// 	 */
+	// 	bool
+	// 	isActive()
+	// 	{
+	// 		return (timer_status == UWPOLLING_FROZEN ||
+	// 				timer_status == UWPOLLING_RUNNING);
+	// 	}
 
-		/**
-		 * Resets the counter of the timer
-		 */
-		void
-		resetCounter()
-		{
-			counter = 0;
-		}
+	// 	/**
+	// 	 * Resets the counter of the timer
+	// 	 */
+	// 	void
+	// 	resetCounter()
+	// 	{
+	// 		counter = 0;
+	// 	}
 
-		/**
-		 * Increments the counter of the timer
-		 */
-		void
-		incrCounter()
-		{
-			++counter;
-		}
+	// 	/**
+	// 	 * Increments the counter of the timer
+	// 	 */
+	// 	void
+	// 	incrCounter()
+	// 	{
+	// 		++counter;
+	// 	}
 
-		/**
-		 * Returns the counter of the timer
-		 * @return the value of the counter of the timer
-		 */
-		int
-		getCounter()
-		{
-			return counter;
-		}
+	// 	/**
+	// 	 * Returns the counter of the timer
+	// 	 * @return the value of the counter of the timer
+	// 	 */
+	// 	int
+	// 	getCounter()
+	// 	{
+	// 		return counter;
+	// 	}
 
-		/**
-		 * Returns the counter of the timer
-		 * @return the value of the counter of the timer
-		 */
-		double
-		getDuration()
-		{
-			return left_duration;
-		}
+	// 	/**
+	// 	 * Returns the counter of the timer
+	// 	 * @return the value of the counter of the timer
+	// 	 */
+	// 	double
+	// 	getDuration()
+	// 	{
+	// 		return left_duration;
+	// 	}
 
-	protected:
-		double start_time; /**< Start Time of the timer */
-		double left_duration; /**< Left duration of the timer */
-		int counter; /**< counter of the timer */
-		Uwpolling_SINK
-				*module; /**< Pointer to an object of type Uwpolling_SINK */
-		UWPOLLING_TIMER_STATUS timer_status; /**< Timer status */
-	};
+	// protected:
+	// 	double start_time; /**< Start Time of the timer */
+	// 	double left_duration; /**< Left duration of the timer */
+	// 	int counter; /**< counter of the timer */
+	// 	Uwpolling_SINK
+	// 			*module; /**< Pointer to an object of type Uwpolling_SINK */
+	// 	UWPOLLING_TIMER_STATUS timer_status; /**< Timer status */
+	// };
 
-	/**
-	 * Class (inherited from Uwpolling_SINK_Timer) used to handle the time of
-	 * backoff of the node before transmitting the PROBE packet. After receiving
-	 * a PROBE
-	 * the node set this timer. When the timer expire, the node transmit the
-	 * PROBE
-	 */
-	class BackOffTimer : public Uwpolling_SINK_Timer
-	{
-	public:
-		/**
-		 * Conscructor of ProbeTimer class
-		 * @param Uwpolling_SINK* pointer to an object of type Uwpolling_SINK
-		 */
-		BackOffTimer(Uwpolling_SINK *m)
-			: Uwpolling_SINK_Timer(m)
-		{
-		}
+	// /**
+	//  * Class (inherited from Uwpolling_SINK_Timer) used to handle the time of
+	//  * backoff of the node before transmitting the PROBE packet. After receiving
+	//  * a PROBE
+	//  * the node set this timer. When the timer expire, the node transmit the
+	//  * PROBE
+	//  */
+	// class BackOffTimer : public Uwpolling_SINK_Timer
+	// {
+	// public:
+	// 	/**
+	// 	 * Conscructor of ProbeTimer class
+	// 	 * @param Uwpolling_SINK* pointer to an object of type Uwpolling_SINK
+	// 	 */
+	// 	BackOffTimer(Uwpolling_SINK *m)
+	// 		: Uwpolling_SINK_Timer(m)
+	// 	{
+	// 	}
 
-		/**
-		 * Destructor of DataTimer class
-		 */
-		virtual ~BackOffTimer()
-		{
-		}
+	// 	/**
+	// 	 * Destructor of DataTimer class
+	// 	 */
+	// 	virtual ~BackOffTimer()
+	// 	{
+	// 	}
 
-	protected:
-		/**
-		 * Method call when the timer expire
-		 * @param Eevent*  pointer to an object of type Event
-		 */
-		virtual void expire(Event *e);
-	};
+	// protected:
+	// 	/**
+	// 	 * Method call when the timer expire
+	// 	 * @param Eevent*  pointer to an object of type Event
+	// 	 */
+	// 	virtual void expire(Event *e);
+	// };
 
-	/**
-	 * Class (inherited from Uwpolling_SINK_Timer) used to handle the time in
-	 * which the NODE wait for the DATA Timer.
-	 */
-	class Rx_Data_Timer : public Uwpolling_SINK_Timer
-	{
-	public:
-		/**
-		 * Conscructor of Rx_Data_Timer class
-		 * @param Uwpolling_SINK* pointer to an object of type Uwpolling_SINK
-		 */
-		Rx_Data_Timer(Uwpolling_SINK *m)
-			: Uwpolling_SINK_Timer(m)
-		{
-		}
+	// /**
+	//  * Class (inherited from Uwpolling_SINK_Timer) used to handle the time in
+	//  * which the NODE wait for the DATA Timer.
+	//  */
+	// class Rx_Data_Timer : public Uwpolling_SINK_Timer
+	// {
+	// public:
+	// 	/**
+	// 	 * Conscructor of Rx_Data_Timer class
+	// 	 * @param Uwpolling_SINK* pointer to an object of type Uwpolling_SINK
+	// 	 */
+	// 	Rx_Data_Timer(Uwpolling_SINK *m)
+	// 		: Uwpolling_SINK_Timer(m)
+	// 	{
+	// 	}
 
-		/**
-		 * Destructor of ProbeTimer class
-		 */
-		virtual ~Rx_Data_Timer()
-		{
-		}
+	// 	/**
+	// 	 * Destructor of ProbeTimer class
+	// 	 */
+	// 	virtual ~Rx_Data_Timer()
+	// 	{
+	// 	}
 
-	protected:
-		/**
-		 * Method call when the timer expire
-		 * @param Eevent*  pointer to an object of type Event
-		 */
-		virtual void expire(Event *e);
-	};
+	// protected:
+	// 	/**
+	// 	 * Method call when the timer expire
+	// 	 * @param Eevent*  pointer to an object of type Event
+	// 	 */
+	// 	virtual void expire(Event *e);
+	// };
 
 	/**
 	 * Pass the packet to the PHY layer
@@ -432,125 +432,125 @@ protected:
 	 * a command in tcl.
 	 * @param double delay
 	 * @see command method
-	 */
-	virtual void initInfo();
+	//  */
+	// virtual void initInfo();
 
-	/**
-	 * Refresh the reason for the changing of the state
-	 * @param UWPOLLING_SINK_REASON The reason of the change of the state
-	 */
-	virtual void
-	refreshReason(UWPOLLING_SINK_REASON reason)
-	{
-		last_reason = reason;
-	}
+	// /**
+	//  * Refresh the reason for the changing of the state
+	//  * @param UWPOLLING_SINK_REASON The reason of the change of the state
+	//  */
+	// virtual void
+	// refreshReason(UWPOLLING_SINK_REASON reason)
+	// {
+	// 	last_reason = reason;
+	// }
 
-	/**
-	 * Refresh the state of the protocol
-	 * @param UWPOLLING_AUV_STATUS current state of the protcol
-	 */
-	virtual void
-	refreshState(UWPOLLING_SINK_STATUS state)
-	{
-		prev_state = curr_state;
-		curr_state = state;
-	}
+	// /**
+	//  * Refresh the state of the protocol
+	//  * @param UWPOLLING_AUV_STATUS current state of the protcol
+	//  */
+	// virtual void
+	// refreshState(UWPOLLING_SINK_STATUS state)
+	// {
+	// 	prev_state = curr_state;
+	// 	curr_state = state;
+	// }
 
-	/**
-	 * Increment the number of sent PROBE packets
-	 */
-	virtual void
-	incrProbeSent()
-	{
-		n_probe_sent++;
-	}
+	// /**
+	//  * Increment the number of sent PROBE packets
+	//  */
+	// virtual void
+	// incrProbeSent()
+	// {
+	// 	n_probe_sent++;
+	// }
 
-	/**
-	 * Increment the number of sent PROBE packets
-	 */
-	virtual void
-	incrAckSent()
-	{
-		n_ack_sent++;
-	}
+	// /**
+	//  * Increment the number of sent PROBE packets
+	//  */
+	// virtual void
+	// incrAckSent()
+	// {
+	// 	n_ack_sent++;
+	// }
 
-	/**
-	 * Increments the number of TRIGGER packets received
-	 */
-	inline void
-	incrTriggerReceived()
-	{
-		n_trigger_received++;
-	}
+	// /**
+	//  * Increments the number of TRIGGER packets received
+	//  */
+	// inline void
+	// incrTriggerReceived()
+	// {
+	// 	n_trigger_received++;
+	// }
 
-	/**
-	 * Increments the number of TRIGGER packets dropped because of erroneous CRC
-	 */
-	inline void
-	incrTriggerDropped()
-	{
-		n_trigger_dropped++;
-	}
+	// /**
+	//  * Increments the number of TRIGGER packets dropped because of erroneous CRC
+	//  */
+	// inline void
+	// incrTriggerDropped()
+	// {
+	// 	n_trigger_dropped++;
+	// }
 
-	/**
-	 * Returns the number of PROBE packets sent during the simulation
-	 * @return int n_probe_sent the number of PROBE packets sent
-	 */
-	inline int
-	getProbeSent()
-	{
-		return n_probe_sent;
-	}
+	// /**
+	//  * Returns the number of PROBE packets sent during the simulation
+	//  * @return int n_probe_sent the number of PROBE packets sent
+	//  */
+	// inline int
+	// getProbeSent()
+	// {
+	// 	return n_probe_sent;
+	// }
 
-	/**
-	 * Returns the number of ACK packets sent during the simulation
-	 * @return int n_ack_sent the number of ACK packets sent
-	 */
-	inline int
-	getAckSent()
-	{
-		return n_ack_sent;
-	}
+	// /**
+	//  * Returns the number of ACK packets sent during the simulation
+	//  * @return int n_ack_sent the number of ACK packets sent
+	//  */
+	// inline int
+	// getAckSent()
+	// {
+	// 	return n_ack_sent;
+	// }
 
-	/**
-	 * Return the number of TRIGGER packets received by the NODE
-	 * @return int n_trigger_received number of TRIGGER packets received
-	 */
-	inline int
-	getTriggerReceived()
-	{
-		return n_trigger_received;
-	}
+	// /**
+	//  * Return the number of TRIGGER packets received by the NODE
+	//  * @return int n_trigger_received number of TRIGGER packets received
+	//  */
+	// inline int
+	// getTriggerReceived()
+	// {
+	// 	return n_trigger_received;
+	// }
 
-	/**
-	 * Return the number of TRIGGER dropped by the node because of erroneous CRC
-	 * @return int n_trigger_dropped number of TRIGGER dropped by the AUV
-	 */
-	inline int
-	getTriggerDropped()
-	{
-		return n_trigger_dropped;
-	}
+	// /**
+	//  * Return the number of TRIGGER dropped by the node because of erroneous CRC
+	//  * @return int n_trigger_dropped number of TRIGGER dropped by the AUV
+	//  */
+	// inline int
+	// getTriggerDropped()
+	// {
+	// 	return n_trigger_dropped;
+	// }
 
-	inline uint
-	getDuplicatedPkt()
-	{
-		return duplicate_pkts;
-	}
+	// inline uint
+	// getDuplicatedPkt()
+	// {
+	// 	return duplicate_pkts;
+	// }
 	
-	inline void
-	incrDuplicatedPkt()
-	{
-		duplicate_pkts++;
-	}
-	/**
-	 * Used for debug purposes. (Permit to have a "step by step" behaviour of
-	 * the protocol)
-	 */
-	virtual void waitForUser();
-	/**
-	 * IDLE state. Each variable is resetted
-	 */
+	// inline void
+	// incrDuplicatedPkt()
+	// {
+	// 	duplicate_pkts++;
+	// }
+	// /**
+	//  * Used for debug purposes. (Permit to have a "step by step" behaviour of
+	//  * the protocol)
+	//  */
+	// virtual void waitForUser();
+	// /**
+	//  * IDLE state. Each variable is resetted
+	//  */
 	virtual void stateIdle();
 
 	/**

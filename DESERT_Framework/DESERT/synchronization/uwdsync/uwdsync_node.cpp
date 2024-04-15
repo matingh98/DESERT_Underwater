@@ -50,14 +50,14 @@
 /**
  * Class that represents the binding with the tcl configuration script
  */
-static class UwpollingModule_NODE_Class : public TclClass
+static class UwDSync_Node_Class : public TclClass
 {
 public:
 	/**
 	 * Constructor of the class
 	 */
-	UwpollingModule_NODE_Class()
-		: TclClass("Module/UW/POLLING/NODE")
+	UwDSync_Node_Class()
+		: TclClass("Module/UW/SYNC/NODE")
 	{
 	}
 
@@ -68,410 +68,410 @@ public:
 	TclObject *
 	create(int, const char *const *)
 	{
-		return (new Uwpolling_NODE());
+		return (new UwDSync_Node());
 	}
-} class_module_uwpolling_node;
+} class_module_uwdsync_node;
 
 void
-Uwpolling_NODE::BackOffTimer::expire(Event *e)
+UwDSync_Node::BackOffTimer::expire(Event *e)
 {
-	if (module->debug_)
-	    std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
-				  << ")::BACKOFF_TIMER::EXPIRED" << std::endl;
-	timer_status = UWPOLLING_EXPIRED;
-	if (module->Triggered) {
-		module->BackOffTimerExpired();
-	}
+// 	if (module->debug_)
+// 	    std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
+// 				  << ")::BACKOFF_TIMER::EXPIRED" << std::endl;
+// 	timer_status = UWPOLLING_EXPIRED;
+// 	if (module->Triggered) {
+// 		module->BackOffTimerExpired();
+// 	}
 }
 
 void
-Uwpolling_NODE::BackOffTimerExpired()
+UwDSync_Node::BackOffTimerExpired()
 {
-	refreshReason(UWPOLLING_NODE_REASON_BACKOFF_TIMER_EXPIRED);
-	stateTxProbe();
+	// refreshReason(UWPOLLING_NODE_REASON_BACKOFF_TIMER_EXPIRED);
+	// stateTxProbe();
 }
 
 void
-Uwpolling_NODE::Rx_Poll_Timer::expire(Event *e)
+UwDSync_Node::Rx_Poll_Timer::expire(Event *e)
 {
-	if (module->debug_)
-	    std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
-				  << ")::RX_POLL_TIMER::EXPIRED" << std::endl;
-	timer_status = UWPOLLING_EXPIRED;
-	module->RxPollTimerExpired();
+	// if (module->debug_)
+	//     std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
+	// 			  << ")::RX_POLL_TIMER::EXPIRED" << std::endl;
+	// timer_status = UWPOLLING_EXPIRED;
+	// module->RxPollTimerExpired();
 }
 
 void
-Uwpolling_NODE::Tx_Data_Timer::expire(Event *e)
+UwDSync_Node::Tx_Data_Timer::expire(Event *e)
 {
-	if (module->debug_)
-	    std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
-				  << ")::DATA_TIMER::EXPIRED" << std::endl;
-	timer_status = UWPOLLING_EXPIRED;
-	module->stateTxData();
+	// if (module->debug_)
+	//     std::cout << module->getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << module->addr
+	// 			  << ")::DATA_TIMER::EXPIRED" << std::endl;
+	// timer_status = UWPOLLING_EXPIRED;
+	// module->stateTxData();
 }
 
 void
-Uwpolling_NODE::RxPollTimerExpired()
+UwDSync_Node::RxPollTimerExpired()
 {
-	if (RxPollEnabled) {
-		RxPollEnabled = false;
-		refreshReason(UWPOLLING_NODE_REASON_RX_POLL_TIMER_EXPIRED);
-		stateIdle();
-	}
+	// if (RxPollEnabled) {
+	// 	RxPollEnabled = false;
+	// 	refreshReason(UWPOLLING_NODE_REASON_RX_POLL_TIMER_EXPIRED);
+	// 	stateIdle();
+	// }
 }
 
-bool Uwpolling_NODE::initialized = false;
-map<Uwpolling_NODE::UWPOLLING_NODE_STATUS, string> Uwpolling_NODE::status_info;
-map<Uwpolling_NODE::UWPOLLING_NODE_REASON, string> Uwpolling_NODE::reason_info;
-map<Uwpolling_NODE::UWPOLLING_PKT_TYPE, string> Uwpolling_NODE::pkt_type_info;
+// bool UwDSync_Node::initialized = false;
+// map<Uwpolling_NODE::UWPOLLING_NODE_STATUS, string> Uwpolling_NODE::status_info;
+// map<Uwpolling_NODE::UWPOLLING_NODE_REASON, string> Uwpolling_NODE::reason_info;
+// map<Uwpolling_NODE::UWPOLLING_PKT_TYPE, string> Uwpolling_NODE::pkt_type_info;
 
-Uwpolling_NODE::Uwpolling_NODE()
-	: T_poll(0)
-	, T_poll_guard(0)
-	, backoff_tuner(0)
-	, max_payload(0)
-	, buffer_data_pkts(0)
-	, node_id(0)
-	, sea_trial(0)
-	, print_stats(0)
-	, n_run(0)
-	, Intra_data_Guard_Time(0)
-	, polled(false)
-	, RxPollEnabled(false)
-	, Triggered(false)
-	, LastPacket(false)
-	, MaxTimeStamp(0)
-	, T_in(0)
-	, T_fin(0)
-	, BOffTime(0)
-	, AUV_mac_addr(0)
-	, N_data_pkt_2_TX(0)
-	, packet_index(0)
-	, n_probe_sent(0)
-	, n_times_polled(0)
-	, n_trigger_received(0)
-	, N_polled_node(0)
-	, PROBE_uid(0)
-	, curr_data_pkt(0)
-	, curr_probe_pkt(0)
-	, curr_poll_pkt(0)
-	, curr_trigger_pkt(0)
-	, backoff_timer(this)
-	, rx_poll_timer(this)
-	, tx_data_timer(this)
-	, fout(0)
-	, out_file_stats(0)
-	, n_trigger_dropped(0)
-	, n_poll_dropped(0)
-	, useAdaptiveTpoll(0)
+UwDSync_Node::UwDSync_Node()
+	// : T_poll(0)
+	// , T_poll_guard(0)
+	// , backoff_tuner(0)
+	// , max_payload(0)
+	// , buffer_data_pkts(0)
+	// , node_id(0)
+	// , sea_trial(0)
+	// , print_stats(0)
+	// , n_run(0)
+	// , Intra_data_Guard_Time(0)
+	// , polled(false)
+	// , RxPollEnabled(false)
+	// , Triggered(false)
+	// , LastPacket(false)
+	// , MaxTimeStamp(0)
+	// , T_in(0)
+	// , T_fin(0)
+	// , BOffTime(0)
+	// , AUV_mac_addr(0)
+	// , N_data_pkt_2_TX(0)
+	// , packet_index(0)
+	// , n_probe_sent(0)
+	// , n_times_polled(0)
+	// , n_trigger_received(0)
+	// , N_polled_node(0)
+	// , PROBE_uid(0)
+	// , curr_data_pkt(0)
+	// , curr_probe_pkt(0)
+	// , curr_poll_pkt(0)
+	// , curr_trigger_pkt(0)
+	// , backoff_timer(this)
+	// , rx_poll_timer(this)
+	// , tx_data_timer(this)
+	// , fout(0)
+	// , out_file_stats(0)
+	// , n_trigger_dropped(0)
+	// , n_poll_dropped(0)
+	// , useAdaptiveTpoll(0)
 	
 {
 
-	bind("T_poll_guard_", (double *) &T_poll_guard);
-	bind("backoff_tuner_", (double *) &backoff_tuner);
-	bind("max_payload_", (int *) &max_payload);
-	bind("buffer_data_pkts_", (int *) &buffer_data_pkts);
-	bind("Max_DATA_Pkts_TX_", (int *) &max_data_pkt_tx);
-	bind("node_id_", (uint *) &node_id);
-	bind("print_stats_", (int *) &print_stats);
-	bind("sea_trial_", (int *) &sea_trial);
-	bind("intra_data_guard_time_", (double *) &Intra_data_Guard_Time);
-	bind("n_run_", (int *) &n_run);
-	bind("useAdaptiveTpoll_", (int *) &useAdaptiveTpoll);
+	// bind("T_poll_guard_", (double *) &T_poll_guard);
+	// bind("backoff_tuner_", (double *) &backoff_tuner);
+	// bind("max_payload_", (int *) &max_payload);
+	// bind("buffer_data_pkts_", (int *) &buffer_data_pkts);
+	// bind("Max_DATA_Pkts_TX_", (int *) &max_data_pkt_tx);
+	// bind("node_id_", (uint *) &node_id);
+	// bind("print_stats_", (int *) &print_stats);
+	// bind("sea_trial_", (int *) &sea_trial);
+	// bind("intra_data_guard_time_", (double *) &Intra_data_Guard_Time);
+	// bind("n_run_", (int *) &n_run);
+	// bind("useAdaptiveTpoll_", (int *) &useAdaptiveTpoll);
 	
 
-	if (T_poll_guard <= 0)
-		T_poll_guard = MIN_T_POLL;
-	if (buffer_data_pkts > MAX_BUFFER_SIZE)
-		buffer_data_pkts = MAX_BUFFER_SIZE;
-	if (buffer_data_pkts <= 0)
-		buffer_data_pkts = 1;
-	if (max_data_pkt_tx > buffer_data_pkts) {
-		max_data_pkt_tx = buffer_data_pkts;
-	}
-	if (max_data_pkt_tx == 0) {
-		max_data_pkt_tx = 1;
-	}
+	// if (T_poll_guard <= 0)
+	// 	T_poll_guard = MIN_T_POLL;
+	// if (buffer_data_pkts > MAX_BUFFER_SIZE)
+	// 	buffer_data_pkts = MAX_BUFFER_SIZE;
+	// if (buffer_data_pkts <= 0)
+	// 	buffer_data_pkts = 1;
+	// if (max_data_pkt_tx > buffer_data_pkts) {
+	// 	max_data_pkt_tx = buffer_data_pkts;
+	// }
+	// if (max_data_pkt_tx == 0) {
+	// 	max_data_pkt_tx = 1;
+	// }
 }
 
-Uwpolling_NODE::~Uwpolling_NODE()
+UwDSync_Node::~UwDSync_Node()
 {
 }
 
 int
-Uwpolling_NODE::command(int argc, const char *const *argv)
+UwDSync_Node::command(int argc, const char *const *argv)
 {
-	Tcl &tcl = Tcl::instance();
-	if (argc == 2) {
-		if (strcasecmp(argv[1], "initialize") == 0) {
-			if (!initialized)
-				initInfo();
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getDataQueueSize") == 0) {
-			tcl.resultf("%d", Q_data.size());
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getDataQueueLog") == 0) {
-			getDataQueueLog();
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getProbeSent") == 0) {
-			tcl.resultf("%d", getProbeSent());
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getTimesPolled") == 0) {
-			tcl.resultf("%d", getTimesPolled());
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getTriggerReceived") == 0) {
-			tcl.resultf("%d", getTriggerReceived());
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getTriggerDropped") == 0) {
-			tcl.resultf("%d", getTriggerDropped());
-			return TCL_OK;
-		} else if (strcasecmp(argv[1], "getPollDropped") == 0) {
-			tcl.resultf("%d", getPollDropped());
-			return TCL_OK;
-		}
+	// Tcl &tcl = Tcl::instance();
+	// if (argc == 2) {
+	// 	if (strcasecmp(argv[1], "initialize") == 0) {
+	// 		if (!initialized)
+	// 			initInfo();
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getDataQueueSize") == 0) {
+	// 		tcl.resultf("%d", Q_data.size());
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getDataQueueLog") == 0) {
+	// 		getDataQueueLog();
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getProbeSent") == 0) {
+	// 		tcl.resultf("%d", getProbeSent());
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getTimesPolled") == 0) {
+	// 		tcl.resultf("%d", getTimesPolled());
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getTriggerReceived") == 0) {
+	// 		tcl.resultf("%d", getTriggerReceived());
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getTriggerDropped") == 0) {
+	// 		tcl.resultf("%d", getTriggerDropped());
+	// 		return TCL_OK;
+	// 	} else if (strcasecmp(argv[1], "getPollDropped") == 0) {
+	// 		tcl.resultf("%d", getPollDropped());
+	// 		return TCL_OK;
+	// 	}
 
-	} else if (argc == 3) {
-		if (strcasecmp(argv[1], "setMacAddr") == 0) {
-			addr = atoi(argv[2]);
-			return TCL_OK;
-		}
-	}
-	return MMac::command(argc, argv);
+	// } else if (argc == 3) {
+	// 	if (strcasecmp(argv[1], "setMacAddr") == 0) {
+	// 		addr = atoi(argv[2]);
+	// 		return TCL_OK;
+	// 	}
+	// }
+	// return MMac::command(argc, argv);
 }
 
 int
-Uwpolling_NODE::crLayCommand(ClMessage *m)
+UwDSync_Node::crLayCommand(ClMessage *m)
 {
-	switch (m->type()) {
-		default:
-			return MMac::crLayCommand(m);
-	}
+	// switch (m->type()) {
+	// 	default:
+	// 		return MMac::crLayCommand(m);
+	// }
 }
 
 void
-Uwpolling_NODE::initInfo()
+UwDSync_Node::initInfo()
 {
-	initialized = true;
+	// initialized = true;
 
-	if (sea_trial && print_stats) {
-		std::stringstream stat_file;
-		stat_file << "./Uwpolling_NODE_" << addr << "_" << n_run << ".out";
-		std::cout << stat_file.str().c_str() << endl;
-		out_file_stats.open(stat_file.str().c_str(), std::ios_base::app);
-		out_file_stats << left << getEpoch() << "::" << NOW
-					   << "::Uwpolling_NODE(" << addr << ")::NS_START" << endl;
-	}
+	// if (sea_trial && print_stats) {
+	// 	std::stringstream stat_file;
+	// 	stat_file << "./Uwpolling_NODE_" << addr << "_" << n_run << ".out";
+	// 	std::cout << stat_file.str().c_str() << endl;
+	// 	out_file_stats.open(stat_file.str().c_str(), std::ios_base::app);
+	// 	out_file_stats << left << getEpoch() << "::" << NOW
+	// 				   << "::Uwpolling_NODE(" << addr << ")::NS_START" << endl;
+	// }
 
-	status_info[UWPOLLING_NODE_STATUS_IDLE] = "Idle State";
-	status_info[UWPOLLING_NODE_STATUS_RX_POLL] = "Receiving POLL from AUV";
-	status_info[UWPOLLING_NODE_STATUS_RX_TRIGGER] =
-			"Receiving Trigger from AUV";
-	status_info[UWPOLLING_NODE_STATUS_TX_DATA] = "Transmitting Data to AUV";
-	status_info[UWPOLLING_NODE_STATUS_TX_PROBE] = "Transmitting Probe to AUV";
-	status_info[UWPOLLING_NODE_STATUS_WAIT_POLL] =
-			"Waiting for the reception of POLL packet";
+	// status_info[UWPOLLING_NODE_STATUS_IDLE] = "Idle State";
+	// status_info[UWPOLLING_NODE_STATUS_RX_POLL] = "Receiving POLL from AUV";
+	// status_info[UWPOLLING_NODE_STATUS_RX_TRIGGER] =
+	// 		"Receiving Trigger from AUV";
+	// status_info[UWPOLLING_NODE_STATUS_TX_DATA] = "Transmitting Data to AUV";
+	// status_info[UWPOLLING_NODE_STATUS_TX_PROBE] = "Transmitting Probe to AUV";
+	// status_info[UWPOLLING_NODE_STATUS_WAIT_POLL] =
+	// 		"Waiting for the reception of POLL packet";
 
-	pkt_type_info[UWPOLLING_DATA_PKT] = "Data Packet from Application Layer";
-	pkt_type_info[UWPOLLING_POLL_PKT] = "Poll packet";
-	pkt_type_info[UWPOLLING_TRIGGER_PKT] = "Trigger packet";
-	pkt_type_info[UWPOLLING_PROBE_PKT] = "Probe packet";
+	// pkt_type_info[UWPOLLING_DATA_PKT] = "Data Packet from Application Layer";
+	// pkt_type_info[UWPOLLING_POLL_PKT] = "Poll packet";
+	// pkt_type_info[UWPOLLING_TRIGGER_PKT] = "Trigger packet";
+	// pkt_type_info[UWPOLLING_PROBE_PKT] = "Probe packet";
 
-	reason_info[UWPOLLING_NODE_REASON_NOT_SET] = "Reason not set";
-	reason_info[UWPOLLING_NODE_REASON_BACKOFF_TIMER_EXPIRED] =
-			"BackOff expired";
-	reason_info[UWPOLLING_NODE_REASON_RX_POLL_TIMER_EXPIRED] =
-			"Receving POLL Time-Out";
-	reason_info[UWPOLLING_NODE_REASON_TX_DATA] = "Data transmission";
-	reason_info[UWPOLLING_NODE_REASON_RX_POLL] =
-			"Receiving a poll from the AUV";
-	reason_info[UWPOLLING_NODE_REASON_RX_TRIGGER] =
-			"Receiving a trigger from the AUV";
-	reason_info[UWPOLLING_NODE_REASON_TX_PROBE] =
-			"Transmitting probe to the AUV";
-	reason_info[UWPOLLING_NODE_REASON_EMPTY_DATA_QUEUE] = "Data Queue empty";
-	reason_info[UWPOLLING_NODE_REASON_PKT_ERROR] =
-			"Received a Corrupted Packet";
-	reason_info[UWPOLLING_NODE_REASON_WRONG_RECEIVER] =
-			"Packet not for this receiver";
-	reason_info[UWPOLLING_NODE_REASON_WRONG_STATE] =
-			"Receiving a Packet in Wrong State (--> NOT enabled to receive "
-			"packets)";
-	reason_info[UWPOLLING_NODE_REASON_WRONG_TYPE] =
-			"Receiving a Packet of Wrong Type";
-	reason_info[UWPOLLING_NODE_REASON_LIST_NOT_POLLED] =
-			"This receiver is in the polling list but is not polled";
-	reason_info[UWPOLLING_NODE_REASON_NOT_IN_LIST] =
-			"This receiver is not in the polling list";
+	// reason_info[UWPOLLING_NODE_REASON_NOT_SET] = "Reason not set";
+	// reason_info[UWPOLLING_NODE_REASON_BACKOFF_TIMER_EXPIRED] =
+	// 		"BackOff expired";
+	// reason_info[UWPOLLING_NODE_REASON_RX_POLL_TIMER_EXPIRED] =
+	// 		"Receving POLL Time-Out";
+	// reason_info[UWPOLLING_NODE_REASON_TX_DATA] = "Data transmission";
+	// reason_info[UWPOLLING_NODE_REASON_RX_POLL] =
+	// 		"Receiving a poll from the AUV";
+	// reason_info[UWPOLLING_NODE_REASON_RX_TRIGGER] =
+	// 		"Receiving a trigger from the AUV";
+	// reason_info[UWPOLLING_NODE_REASON_TX_PROBE] =
+	// 		"Transmitting probe to the AUV";
+	// reason_info[UWPOLLING_NODE_REASON_EMPTY_DATA_QUEUE] = "Data Queue empty";
+	// reason_info[UWPOLLING_NODE_REASON_PKT_ERROR] =
+	// 		"Received a Corrupted Packet";
+	// reason_info[UWPOLLING_NODE_REASON_WRONG_RECEIVER] =
+	// 		"Packet not for this receiver";
+	// reason_info[UWPOLLING_NODE_REASON_WRONG_STATE] =
+	// 		"Receiving a Packet in Wrong State (--> NOT enabled to receive "
+	// 		"packets)";
+	// reason_info[UWPOLLING_NODE_REASON_WRONG_TYPE] =
+	// 		"Receiving a Packet of Wrong Type";
+	// reason_info[UWPOLLING_NODE_REASON_LIST_NOT_POLLED] =
+	// 		"This receiver is in the polling list but is not polled";
+	// reason_info[UWPOLLING_NODE_REASON_NOT_IN_LIST] =
+	// 		"This receiver is not in the polling list";
 }
 
 void
-Uwpolling_NODE::stateTxProbe()
+UwDSync_Node::stateTxProbe()
 {
-	if (Triggered) {
-		refreshState(UWPOLLING_NODE_STATUS_TX_PROBE);
-		initPkt(UWPOLLING_PROBE_PKT);
-		hdr_PROBE *probehdr = HDR_PROBE(curr_probe_pkt);
-		if (probehdr->n_pkts() > 0) {
-			PROBE_uid++;
-			probehdr->PROBE_uid_ = PROBE_uid;
-			if (sea_trial && print_stats)
-				out_file_stats << left << getEpoch() << "::" << NOW
-							   << "::Uwpolling_NODE(" << addr
-							   << ")::TX_PROBE_ID_" << PROBE_uid
-							   << "_N_PKTS=" << (uint) probehdr->n_pkts_
-							   << endl;
-			if (debug_)
-			    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-						  << ")::STATE_TX_PROBE_ID_" << PROBE_uid
-						  << "_N_PKTS=" << (uint) probehdr->n_pkts_ << endl;
-			TxPRobe();
-		} else {
-			if (debug_)
-				std::cout
-				  << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-				  << ")::STATE_TX_PROBE::NOT_TX_PROBE--->Empty Data Queue"
-				  << std::endl;
-			refreshReason(UWPOLLING_NODE_REASON_EMPTY_DATA_QUEUE);
-			Packet::free(curr_probe_pkt);
+	// if (Triggered) {
+	// 	refreshState(UWPOLLING_NODE_STATUS_TX_PROBE);
+	// 	initPkt(UWPOLLING_PROBE_PKT);
+	// 	hdr_PROBE *probehdr = HDR_PROBE(curr_probe_pkt);
+	// 	if (probehdr->n_pkts() > 0) {
+	// 		PROBE_uid++;
+	// 		probehdr->PROBE_uid_ = PROBE_uid;
+	// 		if (sea_trial && print_stats)
+	// 			out_file_stats << left << getEpoch() << "::" << NOW
+	// 						   << "::Uwpolling_NODE(" << addr
+	// 						   << ")::TX_PROBE_ID_" << PROBE_uid
+	// 						   << "_N_PKTS=" << (uint) probehdr->n_pkts_
+	// 						   << endl;
+	// 		if (debug_)
+	// 		    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 					  << ")::STATE_TX_PROBE_ID_" << PROBE_uid
+	// 					  << "_N_PKTS=" << (uint) probehdr->n_pkts_ << endl;
+	// 		TxPRobe();
+	// 	} else {
+	// 		if (debug_)
+	// 			std::cout
+	// 			  << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 			  << ")::STATE_TX_PROBE::NOT_TX_PROBE--->Empty Data Queue"
+	// 			  << std::endl;
+	// 		refreshReason(UWPOLLING_NODE_REASON_EMPTY_DATA_QUEUE);
+	// 		Packet::free(curr_probe_pkt);
 			stateIdle();
-		}
-	}
+	// 	}
+	// }
 }
 
 void
-Uwpolling_NODE::TxPRobe()
+UwDSync_Node::TxPRobe()
 {
-	incrCtrlPktsTx();
-	incrProbeSent();
-	Mac2PhyStartTx(curr_probe_pkt);
+	// incrCtrlPktsTx();
+	// incrProbeSent();
+	// Mac2PhyStartTx(curr_probe_pkt);
 }
 
 void
-Uwpolling_NODE::stateWaitPoll()
+UwDSync_Node::stateWaitPoll()
 {
-	refreshState(UWPOLLING_NODE_STATUS_WAIT_POLL);
-	if (debug_)
-	    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-				  << ")::STATE_WAIT_POLL---> Timer_rx_poll =  "
-				  << rx_poll_timer.getDuration() << std::endl;
-	RxPollEnabled = true;
-	if (T_poll < 0) {
-		cerr << "Scheduling POLL timer ----> negative value " << T_poll << endl;
-		T_poll = 60;
-	}
-	rx_poll_timer.schedule(T_poll);
+	// refreshState(UWPOLLING_NODE_STATUS_WAIT_POLL);
+	// if (debug_)
+	//     std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 			  << ")::STATE_WAIT_POLL---> Timer_rx_poll =  "
+	// 			  << rx_poll_timer.getDuration() << std::endl;
+	// RxPollEnabled = true;
+	// if (T_poll < 0) {
+	// 	cerr << "Scheduling POLL timer ----> negative value " << T_poll << endl;
+	// 	T_poll = 60;
+	// }
+	// rx_poll_timer.schedule(T_poll);
 }
 
 void
-Uwpolling_NODE::stateRxPoll()
+UwDSync_Node::stateRxPoll()
 {
-	if (RxPollEnabled) {
-		refreshState(UWPOLLING_NODE_STATUS_RX_POLL);
-		hdr_POLL *pollh = HDR_POLL(curr_poll_pkt);
-		if (debug_)
-		    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-					  << ")::STATE_RX_POLL::Node_POLLED = " << pollh->id_
-					  << std::endl;
-		int polled_node = pollh->id_;
-		if (useAdaptiveTpoll) {
-			rx_poll_timer.schedule(pollh->POLL_time());
-			//std::cout << "Poll timer rescheduled " << pollh->POLL_time() << std::endl;
-		}
-		if (node_id == (uint) polled_node) {
-			polled = true;
-			if (sea_trial && print_stats)
-				out_file_stats << left << getEpoch() << "::" << NOW
-							   << "::Uwpolling_NODE(" << addr
-							   << ")::POLLED_POLL_ID_" << pollh->POLL_uid_
-							   << endl;
-			refreshReason(UWPOLLING_NODE_REASON_RX_POLL);
-			Packet::free(curr_poll_pkt);
-			incrTimesPolled();
-			stateTxData();
+	// if (RxPollEnabled) {
+	// 	refreshState(UWPOLLING_NODE_STATUS_RX_POLL);
+	// 	hdr_POLL *pollh = HDR_POLL(curr_poll_pkt);
+	// 	if (debug_)
+	// 	    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 				  << ")::STATE_RX_POLL::Node_POLLED = " << pollh->id_
+	// 				  << std::endl;
+	// 	int polled_node = pollh->id_;
+	// 	if (useAdaptiveTpoll) {
+	// 		rx_poll_timer.schedule(pollh->POLL_time());
+	// 		//std::cout << "Poll timer rescheduled " << pollh->POLL_time() << std::endl;
+	// 	}
+	// 	if (node_id == (uint) polled_node) {
+	// 		polled = true;
+	// 		if (sea_trial && print_stats)
+	// 			out_file_stats << left << getEpoch() << "::" << NOW
+	// 						   << "::Uwpolling_NODE(" << addr
+	// 						   << ")::POLLED_POLL_ID_" << pollh->POLL_uid_
+	// 						   << endl;
+	// 		refreshReason(UWPOLLING_NODE_REASON_RX_POLL);
+	// 		Packet::free(curr_poll_pkt);
+	// 		incrTimesPolled();
+	// 		stateTxData();
 
-		} else {
-			refreshReason(UWPOLLING_NODE_REASON_NOT_IN_LIST);
-			drop(curr_poll_pkt, 1, UWPOLLING_NODE_DROP_REASON_NOT_POLLED);
-		}
-	} else {
-		if (debug_)
-		    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-					  << ")::STATE_RX_POLL::NODE_NOT_POLLED" << endl;
-		refreshReason(UWPOLLING_NODE_REASON_WRONG_STATE);
-		drop(curr_poll_pkt, 1, UWPOLLING_NODE_DROP_REASON_WRONG_STATE);
-	}
+	// 	} else {
+	// 		refreshReason(UWPOLLING_NODE_REASON_NOT_IN_LIST);
+	// 		drop(curr_poll_pkt, 1, UWPOLLING_NODE_DROP_REASON_NOT_POLLED);
+	// 	}
+	// } else {
+	// 	if (debug_)
+	// 	    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 				  << ")::STATE_RX_POLL::NODE_NOT_POLLED" << endl;
+	// 	refreshReason(UWPOLLING_NODE_REASON_WRONG_STATE);
+	// 	drop(curr_poll_pkt, 1, UWPOLLING_NODE_DROP_REASON_WRONG_STATE);
+	// }
 }
 
 void
-Uwpolling_NODE::recvFromUpperLayers(Packet *p)
+UwDSync_Node::recvFromUpperLayers(Packet *p)
 {
-	if ((int) Q_data.size() < buffer_data_pkts) {
-		hdr_uwcbr *cbrh = HDR_UWCBR(p);
-		if (debug_)
-		    std::cout << getEpoch() << "::" << NOW << "::UWPOLLING_NODE(" << addr
-					  << ")::RECV_FROM_U_LAYERS_ID_" << cbrh->sn_ << endl;
-		if (sea_trial && print_stats)
-			out_file_stats << left << getEpoch() << "::" << NOW
-						   << "::Uwpolling_NODE(" << addr
-						   << ")::RECV_FROM_U_LAYERS_ID_" << cbrh->sn_ << endl;
-		//add Header
+	// if ((int) Q_data.size() < buffer_data_pkts) {
+	// 	hdr_uwcbr *cbrh = HDR_UWCBR(p);
+	// 	if (debug_)
+	// 	    std::cout << getEpoch() << "::" << NOW << "::UWPOLLING_NODE(" << addr
+	// 				  << ")::RECV_FROM_U_LAYERS_ID_" << cbrh->sn_ << endl;
+	// 	if (sea_trial && print_stats)
+	// 		out_file_stats << left << getEpoch() << "::" << NOW
+	// 					   << "::Uwpolling_NODE(" << addr
+	// 					   << ")::RECV_FROM_U_LAYERS_ID_" << cbrh->sn_ << endl;
+	// 	//add Header
 		
-		Q_data.push(p);
-	} else {
-		if (sea_trial && print_stats)
-			out_file_stats << left << getEpoch() << "::" << NOW
-						   << "Uwpolling_NODE(" << addr << ")::DROP_FULL_QUEUE"
-						   << endl;
-		if (debug_)
-		    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-					  << ")::DROP_FULL_QUEUE" << std::endl;
-		incrDiscardedPktsTx();
-		drop(p, 1, UWPOLLING_NODE_DROP_REASON_BUFFER_FULL);
-	}
+	// 	Q_data.push(p);
+	// } else {
+	// 	if (sea_trial && print_stats)
+	// 		out_file_stats << left << getEpoch() << "::" << NOW
+	// 					   << "Uwpolling_NODE(" << addr << ")::DROP_FULL_QUEUE"
+	// 					   << endl;
+	// 	if (debug_)
+	// 	    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 				  << ")::DROP_FULL_QUEUE" << std::endl;
+	// 	incrDiscardedPktsTx();
+	// 	drop(p, 1, UWPOLLING_NODE_DROP_REASON_BUFFER_FULL);
+	// }
 }
 
 void
-Uwpolling_NODE::stateTxData()
+UwDSync_Node::stateTxData()
 {
-	if (polled) {
-		if (curr_state == UWPOLLING_NODE_STATUS_RX_POLL) {
-			packet_index = 1;
-			LastPacket = false;
-		} else {
-			packet_index++;
-		}
-		refreshState(UWPOLLING_NODE_STATUS_TX_DATA);
-		curr_data_pkt = Q_data.front();
-		Q_data.pop();
-		hdr_uwcbr *cbrh = HDR_UWCBR(curr_data_pkt);
-		if (debug_)
-		    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
-					  << ")::STATE_TX_DATA_ " << packet_index
-					  << "::OF::" << N_data_pkt_2_TX 
-					  << "_PACKET_INDEX_" << cbrh->sn_ << std::endl;
-		if (sea_trial && print_stats)
-			out_file_stats << left << getEpoch() << "::" << NOW
-						   << "::Uwpolling_NODE(" << addr << ")::TX_DATA_"
-						   << packet_index << "_OF_" << N_data_pkt_2_TX
-						   << "_PACKET_INDEX_" << cbrh->sn_ << endl;
-		if (packet_index == N_data_pkt_2_TX)
-			LastPacket = true;
-		hdr_mac *mach = HDR_MAC(curr_data_pkt);
-		mach->macSA() = addr;
-		mach->macDA() = AUV_mac_addr;
-		TxData();
-	}
+	// if (polled) {
+	// 	if (curr_state == UWPOLLING_NODE_STATUS_RX_POLL) {
+	// 		packet_index = 1;
+	// 		LastPacket = false;
+	// 	} else {
+	// 		packet_index++;
+	// 	}
+	// 	refreshState(UWPOLLING_NODE_STATUS_TX_DATA);
+	// 	curr_data_pkt = Q_data.front();
+	// 	Q_data.pop();
+	// 	hdr_uwcbr *cbrh = HDR_UWCBR(curr_data_pkt);
+	// 	if (debug_)
+	// 	    std::cout << getEpoch() << "::" << NOW << "::Uwpolling_NODE(" << addr
+	// 				  << ")::STATE_TX_DATA_ " << packet_index
+	// 				  << "::OF::" << N_data_pkt_2_TX 
+	// 				  << "_PACKET_INDEX_" << cbrh->sn_ << std::endl;
+	// 	if (sea_trial && print_stats)
+	// 		out_file_stats << left << getEpoch() << "::" << NOW
+	// 					   << "::Uwpolling_NODE(" << addr << ")::TX_DATA_"
+	// 					   << packet_index << "_OF_" << N_data_pkt_2_TX
+	// 					   << "_PACKET_INDEX_" << cbrh->sn_ << endl;
+	// 	if (packet_index == N_data_pkt_2_TX)
+	// 		LastPacket = true;
+	// 	hdr_mac *mach = HDR_MAC(curr_data_pkt);
+	// 	mach->macSA() = addr;
+	// 	mach->macDA() = AUV_mac_addr;
+	// 	TxData();
+	// }
 }
 
 void
-Uwpolling_NODE::Mac2PhyStartTx(Packet *p)
+UwDSync_Node::Mac2PhyStartTx(Packet *p)
 {
 	MMac::Mac2PhyStartTx(p);
 }
 
 void
-Uwpolling_NODE::TxData()
+UwDSync_Node::TxData()
 {
 	incrDataPktsTx();
 	Mac2PhyStartTx(curr_data_pkt);

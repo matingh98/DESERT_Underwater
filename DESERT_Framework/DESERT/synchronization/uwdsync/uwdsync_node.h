@@ -29,7 +29,7 @@
 
 /**
  * @file   uwdsync_node.h
- * @author Federico Favaro
+ * @author Matin Ghalkhani
  * @version 1.0.0
  *
  * \brief Class that represents a node of UWPOLLING
@@ -71,7 +71,7 @@
 /**
  * Class used to represents the UWPOLLING MAC layer of a node.
  */
-class Uwpolling_NODE : public MMac
+class UwDSync_Node : public MMac
 {
 public:
 	/**
