@@ -53,7 +53,6 @@
 #include <chrono>
 
 
-// #define UWPOLLING_SINK_DROP_REASON_NOT_POLLED \
 // 	"DNP" /**< The node is not in the polling list */
 
 	/**
@@ -235,4 +234,5 @@ protected:
 			  std::chrono::system_clock::now().time_since_epoch()).count() );
 	  return timestamp;
 	}
+};
 #endif

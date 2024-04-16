@@ -57,7 +57,7 @@ public:
 	/**
 	 * Constructor of the class
 	 */
-	UwDSync_ref()
+	UwDSync_REF()
 		: TclClass("Module/UW/DSYNC/REF")
 	{
 	}
