@@ -120,6 +120,7 @@ DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'-I$(top_srcdir)/channel/uwem_channel'
 DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'-I$(top_srcdir)/statistics/uwstats_utilities'
 DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'-I$(top_srcdir)/ranging/uwranging_tokenbus'
 DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'-I$(top_srcdir)/ranging/uwranging_tdma'
+DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'-I$(top_srcdir)/synchronization/uwdsync'
 
 
 DESERT_CPPFLAGS="$DESERT_CPPFLAGS "'$(GCC6_FLAG)'
@@ -210,6 +211,7 @@ AC_CONFIG_FILES([
     statistics/uwstats_utilities/Makefile
     ranging/uwranging_tokenbus/Makefile
     ranging/uwranging_tdma/Makefile
+    synchronization/uwdsync/Makefile
     ])
 
 AC_OUTPUT
