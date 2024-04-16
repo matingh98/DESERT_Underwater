@@ -28,34 +28,31 @@
  
 AM_CXXFLAGS = -Wall -ggdb3
 
-lib_LTLIBRARIES = libuwpolling.la
+lib_LTLIBRARIES = libuwdsync.la
 check_PROGRAMS = 
 
 SUBDIRS = 
 
 TESTS = 
 
-libuwpolling_la_SOURCES = initlib.cpp\
-	uwpolling_default.tcl\
-	uwpolling_AUV.cpp\
-	uwpolling_NODE.cpp\
-	uwpolling_SINK.cpp
+libuwdsync_la_SOURCES = initlib.cpp\
+	uwdsync_ref.cpp
 
-libuwpolling_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
-libuwpolling_la_LDFLAGS =  @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@
-libuwpolling_la_LIBADD = @NS_LIBADD@ @NSMIRACLE_LIBADD@ @DESERT_LIBADD@
+libuwdsync_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
+libuwdsync_la_LDFLAGS =  @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@
+libuwdsync_la_LIBADD = @NS_LIBADD@ @NSMIRACLE_LIBADD@ @DESERT_LIBADD@
 
-nodist_libuwpolling_la_SOURCES = InitTcl.cc
+nodist_libuwdsync_la_SOURCES = InitTcl.cc
 
 
 BUILT_SOURCES = InitTcl.cc
 
 CLEANFILES = InitTcl.cc
 
-TCL_FILES = uwpolling_default.tcl
+TCL_FILES = 
 
 InitTcl.cc: Makefile $(TCL_FILES)
-		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwpolling_default > InitTcl.cc
+		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsync > InitTcl.cc
 
 
 EXTRA_DIST = $(TCL_FILES)
