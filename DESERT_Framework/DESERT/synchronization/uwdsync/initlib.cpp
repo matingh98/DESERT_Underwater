@@ -37,8 +37,25 @@
 #include <tclcl.h>
 extern EmbeddedTcl UwDSyncTclCode;
 extern "C" int
+
+
+
 Uwdsync_Init()
 {
 UwDSyncTclCode.load();
 return 0;
+}
+
+
+
+static class DSyncHeaderClass : public PacketHeaderClass
+{
+public:
+DSyncHeaderClass()
+: DSyncHeaderClass("PacketHeader/DSYNCPROTO",
+sizeof(hdr_DSYNC))
+{
+this->bind();
+bind_offset(&hdr_DSYNC::offset_);
+}
 }
