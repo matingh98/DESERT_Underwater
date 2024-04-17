@@ -72,7 +72,7 @@
 	/**
  * Class used to represents the UWPOLLING MAC layer of a node.
  */
-class UWDSync : public MMac
+class Uwpolling_SINK : public MMac
 {
 public:
 	/**

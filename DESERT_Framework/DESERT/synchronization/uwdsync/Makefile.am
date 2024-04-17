@@ -37,6 +37,7 @@ TESTS =
 
 libuwdsync_la_SOURCES = initlib.cpp\
 	uwdsync_ref.cpp
+	uwdsync_node.cpp
 
 libuwdsync_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
 libuwdsync_la_LDFLAGS =  @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@

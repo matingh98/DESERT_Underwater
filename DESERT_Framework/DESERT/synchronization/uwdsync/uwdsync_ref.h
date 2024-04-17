@@ -53,8 +53,6 @@
 #include <chrono>
 
 
-// 	"DNP" /**< The node is not in the polling list */
-
 	/**
  * Class used to represents the UWPOLLING MAC layer of a node.
  */
@@ -113,14 +111,14 @@ protected:
 	/**
 	 * Class that describes the timer in the SINK
 	 */
-	class UwDSync_Timer : public TimerHandler
+	class UwDSync_ref_Timer : public TimerHandler
 	{
 	public:
 		/**
 		 * Constructor of the Uwpolling_SINK_Timer class
-		 * @param Uwpolling_SINK* a pointer to an object of type Uwpolling_AUV
+		 * @param UwDSync_ref* a pointer to an object of type UwDSync_ref
 		 */
-		UwDSync_Timer(UwDSync_ref *m)
+		UwDSync_ref_Timer(UwDSync_ref *m)
 			: TimerHandler()
 			, module(m)
 			
@@ -129,7 +127,7 @@ protected:
 		}
 
 		
-		virtual ~UwDSync_Timer()
+		virtual ~UwDSync_ref_Timer()
 		{
 		}
 
