@@ -51,40 +51,25 @@
 
 extern packet_t PT_DSYNC;
 
-
-
 /**
  * Header of the TRIGGER message
  */
-typedef struct hdr_DSYNC {
-    double TIME_STAMP = 0; /**< Maximum number of node to POLL */
+typedef struct hdr_DSYNC
+{
+	double TIME_STAMP; /**< Maximum number of node to POLL */
 
 	uint DSYNC_uid_; /**< DSYNC packet unique ID */
-	static int offset_; /**< Required by the PacketHeaderManager. */
 
-	/**
-	 * Reference to the offset variable
-	 */
-	inline static int &
-	offset()
+	hdr_DSYNC() : TIME_STAMP(0), DSYNC_uid_(0) {} // Constructor to initialize members
+
+	uint &DSYNC_uid()
 	{
-		return offset_;
+		return DSYNC_uid_;
 	}
 
-	
-	/**
-	 * Reference to the TRIGGER_uid variable
-	 */
-	uint &
-	DSYNC_uid_()
+	inline static struct hdr_DSYNC *access(const Packet *p)
 	{
-		return (DSYNC_uid_);
-	}
-
-	inline static struct hdr_DSYNC *
-	access(const Packet *p)
-	{
-		return (struct hdr_DSYNC *) p->access(offset_);
+		return (struct hdr_DSYNC *)p;
 	}
 } hdr_DSYNC;
 #endif

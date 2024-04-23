@@ -51,6 +51,10 @@
 #include <fstream>
 #include <chrono>
 
+
+
+const long double Alpha = 0.0005; 
+const long double Beta = 0.05; 
 /**
  * Class used to represents the UWPOLLING MAC layer of a node.
  */
@@ -87,22 +91,7 @@ public:
 
 protected:
 	/**< Variable that rapresents the status of the protocol machine state */
-	enum UWPOLLING_NODE_STATUS {
-		UWPOLLING_NODE_STATUS_IDLE = 1,
-		UWPOLLING_NODE_STATUS_RX_TRIGGER,
-		UWPOLLING_NODE_STATUS_TX_PROBE,
-		UWPOLLING_NODE_STATUS_RX_POLL,
-		UWPOLLING_NODE_STATUS_TX_DATA,
-		UWPOLLING_NODE_STATUS_WAIT_POLL
-	};
-
-	/**< Type of the packet */
-	enum UWPOLLING_PKT_TYPE {
-		UWPOLLING_DATA_PKT = 1,
-		UWPOLLING_POLL_PKT,
-		UWPOLLING_TRIGGER_PKT,
-		UWPOLLING_PROBE_PKT
-	};
+	
 
 	/**
 	 * Class that describes the timer in the Node
@@ -202,13 +191,6 @@ protected:
 	 * Calculate the epoch of the event. Used in sea-trial mode
 	 * @return the epoch of the system
 	 */
-	inline unsigned long int
-	getEpoch()
-	{
-	  unsigned long int timestamp =
-		  (unsigned long int) (std::chrono::duration_cast<std::chrono::milliseconds>(
-			  std::chrono::system_clock::now().time_since_epoch()).count() );
-	  return timestamp;
-	}
+	
 }
 #endif

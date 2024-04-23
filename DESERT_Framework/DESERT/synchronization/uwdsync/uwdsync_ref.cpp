@@ -42,11 +42,11 @@
 #include "uwcbr-module.h"
 #include "mphy_pktheader.h"
 #include "rng.h"
+#include "uwdsync_cmn_hdr.h"
 
 #include <algorithm>
 #include <sstream>
 #include <sys/time.h>
-
 
 /**
  * Class that represents the binding with the tcl configuration script
@@ -77,140 +77,43 @@ UwDSync_ref::UwDSync_ref()
 	: MMac()
 
 {
-	
 }
 
 UwDSync_ref::~UwDSync_ref()
 {
 }
 
-int
-UwDSync_ref::command(int argc, const char *const *argv)
+int UwDSync_ref::command(int argc, const char *const *argv)
 {
 }
 
-int
-UwDSync_ref::crLayCommand(ClMessage *m)
+int UwDSync_ref::crLayCommand(ClMessage *m)
 {
-	switch (m->type()) {
-		default:
-			return MMac::crLayCommand(m);
+	switch (m->type())
+	{
+	default:
+		return MMac::crLayCommand(m);
 	}
 }
 
-
-void 
-UwDSync_ref::Phy2MacEndRx(Packet *p)
+void UwDSync_ref::stateIdle()
 {
-	// hdr_cmn *ch = HDR_CMN(p);
-	// hdr_mac *mach = HDR_MAC(p);
-	// int dest_mac = mach->macDA();
-	// if (ch->error()) { //discard packet
-	// 	//DISCARD PACKET AND INCREMENTS DEDICATED COUNTER
-	// 	if (ch->ptype() == PT_TRIGGER) {
-	// 		if (debug_)
-	// 			std::cout << NOW << "Uwpolling_SINK(" << addr
-	// 					  << ")::PHY2MACENDRX::DROP_TRIGGER" << std::endl;
-	// 		if (sea_trial && print_stats)
-	// 			out_file_stats << left << "[" << getEpoch() << "]::" << NOW
-	// 						   << "::Uwpolling_SINK(" << addr
-	// 						   << ")::PKT_TRIGGER_DROP_ERROR" << endl;
-	// 		incrTriggerDropped();
-	// 	} 
-		// refreshReason(UWPOLLING_SINK_REASON_PKT_ERROR);
-		// drop(p, 1, UWPOLLING_SINK_DROP_REASON_ERROR);
-	// } else {
-	// 	if (dest_mac == addr || dest_mac == (int) MAC_BROADCAST) { //Check MAC address
-	// 		if (ch->ptype() == PT_TRIGGER) {
-	// 			curr_trigger_pkt = p->copy();
-	// 			Packet::free(p);
-	// 			refreshReason(UWPOLLING_SINK_REASON_RX_TRIGGER);
-	// 			stateRxTrigger();
-	// 		} else if (ch->ptype() != PT_POLL && ch->ptype() != PT_PROBE &&
-	// 				ch->ptype() != PT_ACK_SINK) { //data pkt
-				
-	// 			curr_data_pkt = p->copy();
-	// 			Packet::free(p);
-	// 			refreshReason(UWPOLLING_SINK_REASON_RX_DATA);
-	// 			stateRxData();
-	// 		}  else {
-	// 			if (ch->ptype() == PT_POLL && RxDataEnabled && useAdaptiveTdata) {
-	// 				hdr_POLL *pollh = HDR_POLL(p);
-	// 				rx_data_timer.schedule(pollh->POLL_time());
-	// 				if (debug_)
-	// 					std::cout << NOW << "Uwpolling_SINK(" << addr
-	// 							<< ")::Resched rx data timer, timeout=" 
-	// 							<< pollh->POLL_time() << std::endl;
-	// 			}
-	// 			// PT_PROBE, PT_ACK_SINK and PT_POLL are not considerd by 
-	// 			// the SINK
-	// 			drop(p, 1, UWPOLLING_SINK_DROP_REASON_UNKNOWN_TYPE);
-	// 		}
-	// 	} else {
-	// 		//PACKET NOT FOR ME, DISCARD IT
-	// 		drop(p, 1, UWPOLLING_SINK_DROP_REASON_WRONG_RECEIVER);
-	// 	}
-	// }
+	
 }
 
-void
-UwDSync_ref::stateIdle()
-{
-	// /* Reset timer and move to STATE_IDLE*/
-	// if (debug_) {
-	// 	std::cout << NOW << "Uwpolling_SINK(" << addr << ")::IDLE_STATE"
-	// 			  << std::endl;
-	// }
-	// refreshState(UWPOLLING_SINK_STATUS_IDLE);
-	// Triggered = false;
-	// RxDataEnabled = false;
-	// send_ACK = false;
-	// n_curr_rx_pkts = 0;
-	// first_rx_pkt = true;
-	// triggerEnabled = true;
-	// backoff_timer.force_cancel();
-	// rx_data_timer.force_cancel();
-}
-
-
-
-void 
-UwDSync_ref::Mac2PhyStartTx(Packet *p)
+void UwDSync_ref::Mac2PhyStartTx(Packet *p)
 {
 	MMac::Mac2PhyStartTx(p); // Send down the packet to phy layer
 }
 
-void 
-UwDSync_ref::Phy2MacEndTx(const Packet *p)
+void UwDSync_ref::Phy2MacEndTx(const Packet *p)
 {
-	// hdr_cmn* ch = HDR_CMN(p); 
-	// if (ch->ptype() == PT_PROBE_SINK) {
-	// 	refreshReason(UWPOLLING_SINK_REASON_TX_PROBE);
-	// 	stateWaitData();
-	// } else if (ch->ptype() == PT_ACK_SINK) {
-	// 	refreshReason(UWPOLLING_SINK_REASON_TX_ACK);
-	// stateIdle();
-	// }
+    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
+
+    // Increment DSYNC_uid_ each time a packet is received
+    dysnc_hdr->DSYNC_uid_++; // Access DSYNC_uid_ as a variable
+
+    // Update TIME_STAMP
+    dysnc_hdr->TIME_STAMP = NOW;
+    stateIdle();
 }
-
-// void
-// Uwpolling_SINK::stateTxAck()
-// {
-// 	if (send_ACK) {
-// 		if(debug_)
-// 			std::cout << NOW << "Uwpolling_SINK(" << addr
-// 					<< ")stateTxAck()" << std::endl;
-// 		refreshState(UWPOLLING_SINK_STATUS_TX_ACK);
-// 		initPkt(UWPOLLING_ACK_PKT);
-// 		txAck();
-// 	}
-// }
-
-// void
-// Uwpolling_SINK::txAck()
-// {
-// 	send_ACK = false;
-// 	incrAckSent();
-// 	incrCtrlPktsTx();
-// 	Mac2PhyStartTx(curr_ack_pkt);
-// }
