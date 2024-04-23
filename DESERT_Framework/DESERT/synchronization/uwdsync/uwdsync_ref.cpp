@@ -98,8 +98,13 @@ int UwDSync_ref::crLayCommand(ClMessage *m)
 
 void UwDSync_ref::stateIdle()
 {
-	
 }
+
+//void UwDSync_ref::Phy2MacStartRx(Packet *p)
+//{
+//}
+
+// void UwDSync_ref::Phy2MacEndRx(Packet *p){}
 
 void UwDSync_ref::Mac2PhyStartTx(Packet *p)
 {
@@ -108,12 +113,12 @@ void UwDSync_ref::Mac2PhyStartTx(Packet *p)
 
 void UwDSync_ref::Phy2MacEndTx(const Packet *p)
 {
-    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
+	hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
 
-    // Increment DSYNC_uid_ each time a packet is received
-    dysnc_hdr->DSYNC_uid_++; // Access DSYNC_uid_ as a variable
+	// Increment DSYNC_uid_ each time a packet is received
+	dysnc_hdr->DSYNC_uid_++; // Access DSYNC_uid_ as a variable
 
-    // Update TIME_STAMP
-    dysnc_hdr->TIME_STAMP = NOW;
-    stateIdle();
+	// Update TIME_STAMP
+	dysnc_hdr->TIME_STAMP = NOW;
+	stateIdle();
 }

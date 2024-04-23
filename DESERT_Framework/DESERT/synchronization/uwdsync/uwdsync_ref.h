@@ -210,27 +210,5 @@ protected:
 	 */
 	virtual void stateIdle();
 
-	// /**
-	//  * The ACK Packet is sent down to the PHY layer
-	//  */
-	// virtual void txAck();
-
-	// /**
-	//  * State in which the ACK is sent
-	//  */
-	// virtual void stateTxAck();
-
-	/**
-	 * Calculate the epoch of the event. Used in sea-trial mode
-	 * @return the epoch of the system
-	 */
-	inline unsigned long int
-	getEpoch()
-	{
-	  unsigned long int timestamp =
-		  (unsigned long int) (std::chrono::duration_cast<std::chrono::milliseconds>(
-			  std::chrono::system_clock::now().time_since_epoch()).count() );
-	  return timestamp;
-	}
 };
 #endif

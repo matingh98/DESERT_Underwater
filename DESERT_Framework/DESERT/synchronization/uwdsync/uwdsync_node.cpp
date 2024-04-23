@@ -96,6 +96,13 @@ int UwDSync_Node::crLayCommand(ClMessage *m)
 	}
 }
 
+void UwDSync_Node::Phy2MacStartRx(const Packet *p)
+	{
+	}
+
+	
+void UwDSync_Node::Phy2MacEndRx(Packet *p){}
+
 void UwDSync_Node::Mac2PhyStartTx(Packet *p)
 {
 	MMac::Mac2PhyStartTx(p);
