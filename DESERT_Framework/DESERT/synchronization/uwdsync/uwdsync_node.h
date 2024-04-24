@@ -40,7 +40,7 @@
 #ifndef UwDSync_NODE_H
 #define UwDSync_NODE_H
 
-// #include "uwpolling_cmn_hdr.h"
+#include "uwdsync_cmn_hdr.h"
 #include "mmac.h"
 
 #include <iostream>
@@ -192,5 +192,5 @@ protected:
 	 * @return the epoch of the system
 	 */
 	
-}
+};
 #endif

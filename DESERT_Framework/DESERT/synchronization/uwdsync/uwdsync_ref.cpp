@@ -85,6 +85,7 @@ UwDSync_ref::~UwDSync_ref()
 
 int UwDSync_ref::command(int argc, const char *const *argv)
 {
+	MMac::command(argc, argv);
 }
 
 int UwDSync_ref::crLayCommand(ClMessage *m)
@@ -100,11 +101,6 @@ void UwDSync_ref::stateIdle()
 {
 }
 
-//void UwDSync_ref::Phy2MacStartRx(Packet *p)
-//{
-//}
-
-// void UwDSync_ref::Phy2MacEndRx(Packet *p){}
 
 void UwDSync_ref::Mac2PhyStartTx(Packet *p)
 {
@@ -122,3 +118,12 @@ void UwDSync_ref::Phy2MacEndTx(const Packet *p)
 	dysnc_hdr->TIME_STAMP = NOW;
 	stateIdle();
 }
+
+void UwDSync_ref::Phy2MacStartRx(const Packet *p)
+{
+}
+
+void UwDSync_ref::Phy2MacEndRx(Packet *p)
+{
+}
+

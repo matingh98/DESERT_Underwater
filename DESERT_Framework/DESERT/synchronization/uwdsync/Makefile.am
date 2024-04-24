@@ -53,7 +53,7 @@ CLEANFILES = InitTcl.cc
 TCL_FILES = 
 
 InitTcl.cc: Makefile $(TCL_FILES)
-		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsync > InitTcl.cc
+		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsyncTclCode > InitTcl.cc
 
 
 EXTRA_DIST = $(TCL_FILES)

@@ -215,10 +215,14 @@ proc createNode { id } {
     set ipr($id)  [new Module/UW/StaticRouting]
     set ipif($id) [new Module/UW/IP]
     set mll($id)  [new Module/UW/MLL] 
-    set tdma($id)  [new Module/UW/TDMA]
-    set dsync($id)  [new Module/UW/DSYNC/REF]  
+    set mac($id)  [new Module/UW/TDMA]
+    if { $id == 2 } {
+      set dsync($id) [new Module/UW/DSYNC/NODE]
+    } else { 
+    set dsync($id) [new Module/UW/DSYNC/REF]  
+    } 
     set phy($id)  [new Module/UW/PHYSICAL]  
-
+    
     for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
         $node($id) addModule 7 $cbr($id,$cnt)   1  "CBR"
     }
@@ -278,7 +282,7 @@ proc createNode { id } {
 # Node Creation #
 #################
 # Create here all the nodes you want to network together
-for {set id 0} {$id < $opt(nn)} {incr id}  {
+for {set id 1} {$id < [expr $opt(nn)+1]} {incr id}  {
     createNode $id
     puts "Node $id created"
 }

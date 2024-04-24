@@ -40,18 +40,18 @@
 #include "uwdsync_cmn_hdr.h"
 #include "mac.h"
 #include "mmac.h"
-
 #include "uwcbr-module.h"
+#include "mphy_pktheader.h"
 #include "rng.h"
 
 #include <sstream>
 #include <sys/time.h>
 #include <iostream>
 
-
 /**
  * Class that represents the binding with the tcl configuration script
  */
+
 static class UwDSync_NODE : public TclClass
 {
 public:
@@ -70,7 +70,7 @@ public:
 	TclObject *
 	create(int, const char *const *)
 	{
-		return (new UwDSync_Node());
+		return (new UwDSync_NODE());
 	}
 } class_module_uwdsync_node;
 
@@ -83,11 +83,12 @@ UwDSync_node::~UwDSync_node()
 {
 }
 
-int UwDSync_Node::command(int argc, const char *const *argv)
+int UwDSync_node::command(int argc, const char *const *argv)
 {
+	MMac::command(argc, argv);
 }
 
-int UwDSync_Node::crLayCommand(ClMessage *m)
+int UwDSync_node::crLayCommand(ClMessage *m)
 {
 	switch (m->type())
 	{
@@ -96,37 +97,35 @@ int UwDSync_Node::crLayCommand(ClMessage *m)
 	}
 }
 
-void UwDSync_Node::Phy2MacStartRx(const Packet *p)
-	{
-	}
+void UwDSync_node::Phy2MacStartRx(const Packet *p)
+{
+}
 
-	
-void UwDSync_Node::Phy2MacEndRx(Packet *p){}
+void UwDSync_node::Phy2MacEndRx(Packet *p) {}
 
-void UwDSync_Node::Mac2PhyStartTx(Packet *p)
+void UwDSync_node::Mac2PhyStartTx(Packet *p)
 {
 	MMac::Mac2PhyStartTx(p);
 }
 
-vvoid UwDSync_Node::Phy2MacEndTx(const Packet *p)
+vvoid UwDSync_node::Phy2MacEndTx(const Packet *p)
 {
-    // Extract DSYNC header from the received packet
-    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
-    
-    double originalTimeStamp = dysnc_hdr->TIME_STAMP;
-    int receivedUid = dysnc_hdr->DSYNC_uid_;
+	// Extract DSYNC header from the received packet
+	hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
 
-    // Calculate the received time incorporating Alpha and Beta
-    long double receivedTimeStamp = Alpha * NOW + Beta;
+	double originalTimeStamp = dysnc_hdr->TIME_STAMP;
+	int receivedUid = dysnc_hdr->DSYNC_uid_;
 
-    // Print the received information
-    std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
-    std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
-    std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
+	// Calculate the received time incorporating Alpha and Beta
+	long double receivedTimeStamp = Alpha * NOW + Beta;
+
+	// Print the received information
+	std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
+	std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
+	std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
 	stateIdle();
-  
 }
 
-void UwDSync_Node::stateIdle()
+void UwDSync_node::stateIdle()
 {
 }

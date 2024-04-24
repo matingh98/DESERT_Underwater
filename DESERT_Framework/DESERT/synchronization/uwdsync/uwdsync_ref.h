@@ -40,7 +40,7 @@
 #ifndef UwDSync_REF_H
 #define UwDSync_REF_H
 
-// #include "uwdsync_cmn_hdr.h" 
+#include "uwdsync_cmn_hdr.h"
 #include "mmac.h"
 
 #include <iostream>
@@ -52,8 +52,7 @@
 #include <list>
 #include <chrono>
 
-
-	/**
+/**
  * Class used to represents the UWPOLLING MAC layer of a node.
  */
 class UwDSync_ref : public MMac
@@ -87,27 +86,6 @@ public:
 	 */
 	virtual int crLayCommand(ClMessage *m);
 
-protected:
-	/**< Variable that rapresents the status of the protocol machine state */
-	enum UWPOLLING_SINK_STATUS {
-		UWPOLLING_SINK_STATUS_IDLE = 1,
-		UWPOLLING_SINK_STATUS_RX_TRIGGER,
-		UWPOLLING_SINK_STATUS_TX_PROBE,
-		UWPOLLING_SINK_STATUS_WAIT_DATA,
-		UWPOLLING_SINK_STATUS_RX_DATA,
-		UWPOLLING_SINK_STATUS_TX_ACK
-	};
-
-	/**< Type of the packet */
-	enum UWPOLLING_PKT_TYPE {
-		UWPOLLING_DATA_PKT = 1,
-		UWPOLLING_POLL_PKT,
-		UWPOLLING_TRIGGER_PKT,
-		UWPOLLING_PROBE_PKT,
-		UWPOLLING_ACK_PKT
-	};
-
-	
 	/**
 	 * Class that describes the timer in the SINK
 	 */
@@ -119,14 +97,12 @@ protected:
 		 * @param UwDSync_ref* a pointer to an object of type UwDSync_ref
 		 */
 		UwDSync_ref_Timer(UwDSync_ref *m)
-			: TimerHandler()
-			, module(m)
-			
+			: TimerHandler(), module(m)
+
 		{
 			assert(m != NULL);
 		}
 
-		
 		virtual ~UwDSync_ref_Timer()
 		{
 		}
@@ -141,12 +117,11 @@ protected:
 		}
 
 	protected:
-		double start_time; /**< Start Time of the timer */
+		double start_time;	  /**< Start Time of the timer */
 		double left_duration; /**< Left duration of the timer */
-		int counter; /**< counter of the timer */
-		UwDSync_ref *module; /**< Pointer to an object of type Uwpolling_SINK */
+		int counter;		  /**< counter of the timer */
+		UwDSync_ref *module;  /**< Pointer to an object of type Uwpolling_SINK */
 	};
-
 
 	/**
 	 * Pass the packet to the PHY layer
@@ -167,10 +142,8 @@ protected:
 	 * @param const Packet* Pointer to an object of type Packet that rapresent
 	 * the Packet that is in reception
 	 */
-	virtual void
-	Phy2MacStartRx(const Packet *p)
-	{
-	}
+	virtual void Phy2MacStartRx(const Packet *p);
+	
 
 	/**
 	 * Method called when the Phy Layer finish to receive a Packet
@@ -193,7 +166,6 @@ protected:
 	//  */
 	// virtual void initInfo();
 
-
 	// /**
 	//  * Returns the number of ACK packets sent during the simulation
 	//  * @return int n_ack_sent the number of ACK packets sent
@@ -204,11 +176,9 @@ protected:
 	// 	return n_ack_sent;
 	// }
 
-
 	/**
 	 * IDLE state. Each variable is resetted
 	 */
 	virtual void stateIdle();
-
 };
 #endif

@@ -37,10 +37,10 @@
 #include <tclcl.h>
 #include <uwdsync_cmn_hdr.h>
 
-extern EmbeddedTcl UwDSyncTclCode;
+extern EmbeddedTcl uwdsyncTclCode;
 extern "C" int Uwdsync_Init()
 {
-    UwDSyncTclCode.load();
+    uwdsyncTclCode.load();
     return 0;
 }
 
