@@ -35,7 +35,6 @@
  * \brief Implementation of Uwpolling_NODE class
  *
  */
-
 #include "uwdsync_node.h"
 #include "uwdsync_cmn_hdr.h"
 #include "mac.h"
@@ -47,6 +46,7 @@
 #include <sstream>
 #include <sys/time.h>
 #include <iostream>
+#include <random> // Include the random library
 
 /**
  * Class that represents the binding with the tcl configuration script
@@ -55,37 +55,46 @@
 static class UwDSync_NODE : public TclClass
 {
 public:
-	/**
-	 * Constructor of the class
-	 */
-	UwDSync_NODE()
-		: TclClass("Module/UW/DSYNC/NODE")
-	{
-	}
+    /**
+     * Constructor of the class
+     */
+    UwDSync_NODE()
+        : TclClass("Module/UW/DSYNC/NODE")
+    {
+    }
 
-	/**
-	 * Creates the TCL object needed for the tcl language interpretation
-	 * @return Pointer to an TclObject
-	 */
-	TclObject *
-	create(int, const char *const *)
-	{
-		return (new UwDSync_NODE());
-	}
-	
+    /**
+     * Creates the TCL object needed for the tcl language interpretation
+     * @return Pointer to an TclObject
+     */
+    TclObject *
+    create(int, const char *const *)
+    {
+        return (new UwDSync_NODE());
+    }
+} class_module_uwdsync_node;
+
+UwDSync_node::UwDSync_node()
+    : MMac()
+{
+}
+
+UwDSync_node::~UwDSync_node()
+{
+}
 
 int UwDSync_node::command(int argc, const char *const *argv)
 {
-	MMac::command(argc, argv);
+    MMac::command(argc, argv);
 }
 
 int UwDSync_node::crLayCommand(ClMessage *m)
 {
-	switch (m->type())
-	{
-	default:
-		return MMac::crLayCommand(m);
-	}
+    switch (m->type())
+    {
+    default:
+        return MMac::crLayCommand(m);
+    }
 }
 
 void UwDSync_node::Phy2MacStartRx(const Packet *p)
@@ -96,25 +105,33 @@ void UwDSync_node::Phy2MacEndRx(Packet *p) {}
 
 void UwDSync_node::Mac2PhyStartTx(Packet *p)
 {
-	MMac::Mac2PhyStartTx(p);
+    MMac::Mac2PhyStartTx(p);
 }
 
-vvoid UwDSync_node::Phy2MacEndTx(const Packet *p)
+void UwDSync_node::Phy2MacEndTx(const Packet *p)
 {
-	// Extract DSYNC header from the received packet
-	hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
+    // Extract DSYNC header from the received packet
+    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
 
-	double originalTimeStamp = dysnc_hdr->TIME_STAMP;
-	int receivedUid = dysnc_hdr->DSYNC_uid_;
+    double originalTimeStamp = dysnc_hdr->TIME_STAMP;
+    int receivedUid = dysnc_hdr->DSYNC_uid_;
 
-	// Calculate the received time incorporating Alpha and Beta
-	long double receivedTimeStamp = Alpha * NOW + Beta;
+    // Generate random values for Alpha and Beta between 0 and 0.05
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 0.05);
 
-	// Print the received information
-	std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
-	std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
-	std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
-	stateIdle();
+    double Alpha = dis(gen);
+    double Beta = dis(gen);
+
+    // Calculate the received time incorporating Alpha and Beta
+    long double receivedTimeStamp = Alpha * NOW + Beta;
+
+    // Print the received information
+    std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
+    std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
+    std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
+    stateIdle();
 }
 
 void UwDSync_node::stateIdle()
