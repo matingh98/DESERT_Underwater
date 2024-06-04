@@ -72,16 +72,7 @@ public:
 	{
 		return (new UwDSync_NODE());
 	}
-} class_module_uwdsync_node;
-
-UwDSync_node::UwDSync_node()
-	: MMac()
-{
-}
-
-UwDSync_node::~UwDSync_node()
-{
-}
+	
 
 int UwDSync_node::command(int argc, const char *const *argv)
 {
