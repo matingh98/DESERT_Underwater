@@ -184,6 +184,9 @@ $data_mask setFreq              $opt(freq)
 $data_mask setBandwidth         $opt(bw)
 $data_mask setPropagationSpeed  $opt(propagation_speed)
 
+### DSYNC ###
+
+
 
 ### PHY ###
 Module/UW/PHYSICAL  set BitRate_                    $opt(bitrate)
@@ -388,6 +391,7 @@ proc finish {} {
        puts "Number of nodes          : $opt(nn)"
        puts "Packet size              : $opt(pktsize) byte(s)"
        puts "CBR period               : $opt(cbr_period) s"
+       puts "Received Time            : [$dsync(2) get_timestamp]"
        puts "-----------------------------------------------------------------"
     }
 

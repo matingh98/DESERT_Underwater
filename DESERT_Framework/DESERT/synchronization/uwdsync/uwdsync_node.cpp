@@ -85,7 +85,18 @@ UwDSync_node::~UwDSync_node()
 
 int UwDSync_node::command(int argc, const char *const *argv)
 {
+
+	Tcl &tcl = Tcl::instance();
+
+	if (argc == 2) {
+		if (strcasecmp(argv[1], "get_timestamp") == 0) {
+			tcl.resultf("%f", receivedTimeStamp);
+			return TCL_OK;
+		
+	}
+	}
     MMac::command(argc, argv);
+
 }
 
 int UwDSync_node::crLayCommand(ClMessage *m)

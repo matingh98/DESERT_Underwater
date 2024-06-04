@@ -36,6 +36,10 @@
  */
 #include <tclcl.h>
 #include <uwdsync_cmn_hdr.h>
+#include <uwdsync_node.h>
+#include <uwdsync_ref.h>
+#include "sap.h"
+#include "packet.h"
 
 extern EmbeddedTcl uwdsyncTclCode;
 extern "C" int Uwdsync_Init()
@@ -53,3 +57,5 @@ public:
         this->bind();
     }
 };
+
+
