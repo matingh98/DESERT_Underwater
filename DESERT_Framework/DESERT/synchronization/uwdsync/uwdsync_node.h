@@ -92,7 +92,7 @@ public:
 protected:
 	/**< Variable that rapresents the status of the protocol machine state */
 	
-
+	double receivedTimeStamp; // New member variable
 	/**
 	 * Class that describes the timer in the Node
 	 */
@@ -132,6 +132,8 @@ protected:
 		double left_duration; /**< Left duration of the timer */
 		int counter; /**< counter of the timer */
 		UwDSync_node *module; /**< Pointer to an object of type Uwpolling_AUV */
+
+
 	};
 
 
@@ -152,10 +154,7 @@ protected:
 	 * @param const Packet* Pointer to an object of type Packet that rapresent
 	 * the Packet that is in reception
 	 */
-	virtual void
-	Phy2MacStartRx(const Packet *p)
-	{
-	}
+	virtual void Phy2MacStartRx(const Packet *p);
 	/**
 	 * Method called when the Phy Layer finish to receive a Packet
 	 * @param const Packet* Pointer to an object of type Packet that rapresent
@@ -185,7 +184,7 @@ protected:
 	 * packets transmitted
 	 * is incremented and we check the number of data packet to transmit
 	 */
-	virtual void stateTxData();
+	//virtual void stateTxData();
 
 	/**
 	 * Calculate the epoch of the event. Used in sea-trial mode

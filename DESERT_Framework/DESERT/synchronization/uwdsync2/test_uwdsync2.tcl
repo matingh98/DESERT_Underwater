@@ -88,8 +88,7 @@ load libUwmStdPhyBpskTracer.so
 load libuwphy_clmsgs.so
 load libuwstats_utilities.so
 load libuwphysical.so
-load libuwdsync.so
-
+load libuwdsync2.so
 #############################
 # NS-Miracle initialization #
 #############################
@@ -208,34 +207,23 @@ Module/UW/PHYSICAL  set debug_                      0
 proc createNode { id } {
 
     global channel ns cbr position node udp portnum ipr ipif
-    global opt mll mac propagation data_mask interf_data dsync
+    global opt mll mac propagation data_mask interf_data dsync2
     
     set node($id) [$ns create-M_Node $opt(tracefile) $opt(cltracefile)] 
 	for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
 		set cbr($id,$cnt)  [new Module/UW/CBR] 
 	}
-    set udp($id)  [new Module/UW/UDP]
-    set ipr($id)  [new Module/UW/StaticRouting]
-    set ipif($id) [new Module/UW/IP]
-    set mll($id)  [new Module/UW/MLL] 
-    set mac($id)  [new Module/UW/TDMA]
+
     if { $id == 1 } {
-        set dsync($id) [new Module/UW/DSYNC/NODE]
+        set dsync2($id) [new Module/UW/DSYNC/A]
     } else { 
-        set dsync($id) [new Module/UW/DSYNC/REF]  
+        set dsync2($id) [new Module/UW/DSYNC/B]  
     } 
     set phy($id)  [new Module/UW/PHYSICAL]  
     
-    for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
-        $node($id) addModule 7 $cbr($id,$cnt)   1  "CBR"
-    }
+    
 
-    $node($id) addModule 7 $udp($id)   1  "UDP"
-    $node($id) addModule 6 $ipr($id)   1  "IPR"
-    $node($id) addModule 5 $ipif($id)  1  "IPF"   
-    $node($id) addModule 4 $mll($id)   1  "MLL"
-    $node($id) addModule 3 $mac($id)   1  "MAC"
-    $node($id) addModule 2 $dsync($id) 1  "DSYNC"
+    $node($id) addModule 2 $dsync2($id) 1  "DSYNC2"
     $node($id) addModule 1 $phy($id)   1  "PHY"
 
     for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
@@ -243,22 +231,10 @@ proc createNode { id } {
         set portnum($id,$cnt) [$udp($id) assignPort $cbr($id,$cnt) ]
     }
 
-    $node($id) setConnection $udp($id)   $ipr($id)   1
-    $node($id) setConnection $ipr($id)   $ipif($id)  1
-    $node($id) setConnection $ipif($id)  $mll($id)   1
-    $node($id) setConnection $mll($id)   $mac($id)   1
-    $node($id) setConnection $mac($id)   $dsync($id) 1
-    $node($id) setConnection $dsync($id) $phy($id)   1
+
+    $node($id) setConnection $dsync2($id) $phy($id)   1
     $node($id) addToChannel  $channel    $phy($id)   1
 
-
-    #Set the IP address of the node
-    #$ipif($id) addr "1.0.0.${id}"
-    $ipif($id) addr [expr $id + 1]
-    
-    # Set the MAC address
-    $mac($id) setMacAddr [expr $id + 5]
-    # $mac($id) setSlotNumber $id
 
     set position($id) [new "Position/BM"]
     $node($id) addPosition $position($id)
@@ -290,61 +266,6 @@ for {set id 0} {$id < $opt(nn)} {incr id}  {
     puts "Node $id created"
 }
 
-###############################
-# MAC settings: Generic mode  #
-###############################
-# Node 1
-$mac(0) setStartTime    0
-$mac(0) setSlotDuration 2
-$mac(0) setGuardTime    0.2
-# Node 2
-$mac(1) setStartTime    2
-$mac(1) setSlotDuration 1
-$mac(1) setGuardTime    0.2
-
-
-################################
-# Inter-node module connection #
-################################
-proc connectNodes {id1 des1} {
-    global ipif ipr portnum cbr cbr_sink ipif_sink portnum_sink ipr_sink opt 
-    $cbr($id1,$des1) set destAddr_ [$ipif($des1) addr]
-    $cbr($id1,$des1) set destPort_ $portnum($des1,$id1)
-}
-
-##################
-# Setup flows    #
-##################
-for {set id1 0} {$id1 < $opt(nn)} {incr id1}  {
-    for {set id2 0} {$id2 < $opt(nn)} {incr id2}  {
-        if {$id1 != $id2} {
-	    connectNodes $id1 $id2
-        }
-    }
-}
-
-###################
-# Fill ARP tables #
-###################
-for {set id1 0} {$id1 < $opt(nn)} {incr id1}  {
-    for {set id2 0} {$id2 < $opt(nn)} {incr id2}  {
-	$mll($id1) addentry [$ipif($id2) addr] [$mac($id2) addr]
-    }
-}
-
-
-
-########################
-# Setup routing tables #
-########################
-for {set id1 0} {$id1 < $opt(nn)} {incr id1}  {
-    for {set id2 0} {$id2 < $opt(nn)} {incr id2}  {
-        if {$id1 != $id2} {
-            $ipr($id1) addRoute [$ipif($id2) addr] [$ipif($id2) addr]
-        }
-    }
-}
-
 
 
 
@@ -355,18 +276,10 @@ for {set id1 0} {$id1 < $opt(nn)} {incr id1}  {
 # e.g., 
 # Set here the timers to start and/or stop modules (optional)
 # e.g., 
-for {set id1 0} {$id1 < $opt(nn)} {incr id1}  {
-    for {set id2 0} {$id2 < $opt(nn)} {incr id2} {
-	if {$id1 != $id2} {
-	    $ns at $opt(starttime)    "$cbr($id1,$id2) start"
-	    $ns at $opt(stoptime)     "$cbr($id1,$id2) stop"
-	}
-    }
-}
 
 for {set ii 0} {$ii < $opt(nn)} {incr ii} {
-    $ns at $opt(starttime)    "$mac($ii) start"
-    $ns at $opt(stoptime)     "$mac($ii) stop"
+    $ns at $opt(starttime)    "$dsync2($ii) start"
+    $ns at $opt(stoptime)     "$dsync2($ii) stop"
 }
 ###################
 # Final Procedure #
@@ -378,7 +291,7 @@ proc finish {} {
     global node_coordinates
     global ipr_sink ipr ipif udp cbr phy phy_data_sink
     global node_stats tmp_node_stats sink_stats tmp_sink_stats
-    global dsync
+    global dsync2
     
     if {$opt(verbose)} {
        puts "-----------------------------------------------------------------"
@@ -386,10 +299,8 @@ proc finish {} {
        puts "-----------------------------------------------------------------"
        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
        puts "Number of nodes          : $opt(nn)"
-       puts "Packet size              : $opt(pktsize) byte(s)"
-       puts "CBR period               : $opt(cbr_period) s"
-       if {[info exists dsync(1)]} {
-           puts "Received Time            : [$dsync(1) get_timestamp]"
+       if {[info exists dsync2(1)]} {
+           puts "Received Time            : [$dsync2(1) get_timestamp]"
        }
        puts "-----------------------------------------------------------------"
     }

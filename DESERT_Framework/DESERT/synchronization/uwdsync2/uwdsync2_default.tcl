@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2017 Regents of the SIGNET lab, University of Padova.
 # All rights reserved.
 #
@@ -25,34 +25,11 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Author: Favaro Federico
+# version: 1.0.0
 
-AM_CXXFLAGS = -Wall -ggdb3
+PacketHeaderManager set tab_(PacketHeader/DSYNC2PROTO) 1
 
-lib_LTLIBRARIES = libuwdsync.la
-check_PROGRAMS =
 
-SUBDIRS =
-
-TESTS =
-
-libuwdsync_la_SOURCES = initlib.cpp \
-    uwdsync_ref.cpp \
-    uwdsync_node.cpp
-
-libuwdsync_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
-libuwdsync_la_LDFLAGS = @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@
-libuwdsync_la_LIBADD = @NS_LIBADD@ @NSMIRACLE_LIBADD@ @DESERT_LIBADD@
-
-nodist_libuwdsync_la_SOURCES = InitTcl.cc
-
-BUILT_SOURCES = InitTcl.cc
-
-CLEANFILES = InitTcl.cc
-
-TCL_FILES =
-
-InitTcl.cc: Makefile $(TCL_FILES)
-		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsyncTclCode > InitTcl.cc
-
-EXTRA_DIST = $(TCL_FILES)
 

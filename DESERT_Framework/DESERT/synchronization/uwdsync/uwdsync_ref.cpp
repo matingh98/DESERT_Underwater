@@ -26,7 +26,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-
 /**
  * @file   uwdsync_ref.cpp
  * @author Matin Ghalkhani
@@ -54,28 +53,27 @@
 static class UwDSync_REF : public TclClass
 {
 public:
-	/**
-	 * Constructor of the class
-	 */
-	UwDSync_REF()
-		: TclClass("Module/UW/DSYNC/REF")
-	{
-	}
+    /**
+     * Constructor of the class
+     */
+    UwDSync_REF()
+        : TclClass("Module/UW/DSYNC/REF")
+    {
+    }
 
-	/**
-	 * Creates the TCL object needed for the tcl language interpretation
-	 * @return Pointer to an TclObject
-	 */
-	TclObject *
-	create(int, const char *const *)
-	{
-		return (new UwDSync_ref());
-	}
+    /**
+     * Creates the TCL object needed for the tcl language interpretation
+     * @return Pointer to an TclObject
+     */
+    TclObject *
+    create(int, const char *const *)
+    {
+        return (new UwDSync_ref());
+    }
 } class_module_uwdsync_ref;
 
 UwDSync_ref::UwDSync_ref()
-	: MMac()
-
+    : MMac()
 {
 }
 
@@ -85,38 +83,37 @@ UwDSync_ref::~UwDSync_ref()
 
 int UwDSync_ref::command(int argc, const char *const *argv)
 {
-	MMac::command(argc, argv);
+    return MMac::command(argc, argv);
 }
 
 int UwDSync_ref::crLayCommand(ClMessage *m)
 {
-	switch (m->type())
-	{
-	default:
-		return MMac::crLayCommand(m);
-	}
+    switch (m->type())
+    {
+    default:
+        return MMac::crLayCommand(m);
+    }
 }
 
 void UwDSync_ref::stateIdle()
 {
 }
 
-
 void UwDSync_ref::Mac2PhyStartTx(Packet *p)
 {
-	MMac::Mac2PhyStartTx(p); // Send down the packet to phy layer
+    MMac::Mac2PhyStartTx(p); // Send down the packet to phy layer
 }
 
 void UwDSync_ref::Phy2MacEndTx(const Packet *p)
 {
-	hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
+    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
 
-	// Increment DSYNC_uid_ each time a packet is received
-	dysnc_hdr->DSYNC_uid_++; // Access DSYNC_uid_ as a variable
+    // Increment DSYNC_uid_ each time a packet is received
+    dysnc_hdr->DSYNC_uid_++; // Access DSYNC_uid_ as a variable
 
-	// Update TIME_STAMP
-	dysnc_hdr->TIME_STAMP = NOW;
-	stateIdle();
+    // Update TIME_STAMP with current time
+    dysnc_hdr->TIME_STAMP = NOW;
+    stateIdle();
 }
 
 void UwDSync_ref::Phy2MacStartRx(const Packet *p)

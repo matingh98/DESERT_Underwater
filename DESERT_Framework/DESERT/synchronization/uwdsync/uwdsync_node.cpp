@@ -26,7 +26,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-
 /**
  * @file   uwdsync_node.cpp
  * @author Matin Ghalkhani
@@ -52,13 +51,13 @@
  * Class that represents the binding with the tcl configuration script
  */
 
-static class UwDSync_NODE : public TclClass
+static class UwDSync_NODE_Class : public TclClass
 {
 public:
     /**
      * Constructor of the class
      */
-    UwDSync_NODE()
+    UwDSync_NODE_Class()
         : TclClass("Module/UW/DSYNC/NODE")
     {
     }
@@ -70,12 +69,12 @@ public:
     TclObject *
     create(int, const char *const *)
     {
-        return (new UwDSync_NODE());
+        return (new UwDSync_node());
     }
 } class_module_uwdsync_node;
 
 UwDSync_node::UwDSync_node()
-    : MMac()
+    : MMac(), receivedTimeStamp(0.0)
 {
 }
 
@@ -85,18 +84,15 @@ UwDSync_node::~UwDSync_node()
 
 int UwDSync_node::command(int argc, const char *const *argv)
 {
+    Tcl &tcl = Tcl::instance();
 
-	Tcl &tcl = Tcl::instance();
-
-	if (argc == 2) {
-		if (strcasecmp(argv[1], "get_timestamp") == 0) {
-			tcl.resultf("%f", receivedTimeStamp);
-			return TCL_OK;
-		
-	}
-	}
-    MMac::command(argc, argv);
-
+    if (argc == 2) { 
+        if (strcasecmp(argv[1], "get_timestamp") == 0) {
+            tcl.resultf("%f", receivedTimeStamp); 
+            return TCL_OK;
+        }
+    }
+    return MMac::command(argc, argv);
 }
 
 int UwDSync_node::crLayCommand(ClMessage *m)
@@ -110,9 +106,29 @@ int UwDSync_node::crLayCommand(ClMessage *m)
 
 void UwDSync_node::Phy2MacStartRx(const Packet *p)
 {
+    // This function is intentionally left empty
 }
 
-void UwDSync_node::Phy2MacEndRx(Packet *p) {}
+void UwDSync_node::Phy2MacEndRx(Packet *p)
+{
+    // Extract DSYNC header from the received packet
+    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
+
+    double originalTimeStamp = dysnc_hdr->TIME_STAMP;
+    int receivedUid = dysnc_hdr->DSYNC_uid_;
+
+
+    // Calculate the received time incorporating Alpha and Beta
+    receivedTimeStamp = 10;
+
+    // Print the received information
+    std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
+    std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
+    std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
+
+    stateIdle();
+}
+
 
 void UwDSync_node::Mac2PhyStartTx(Packet *p)
 {
@@ -121,30 +137,11 @@ void UwDSync_node::Mac2PhyStartTx(Packet *p)
 
 void UwDSync_node::Phy2MacEndTx(const Packet *p)
 {
-    // Extract DSYNC header from the received packet
-    hdr_DSYNC *dysnc_hdr = HDR_DSYNC(p);
-
-    double originalTimeStamp = dysnc_hdr->TIME_STAMP;
-    int receivedUid = dysnc_hdr->DSYNC_uid_;
-
-    // Generate random values for Alpha and Beta between 0 and 0.05
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 0.05);
-
-    double Alpha = dis(gen);
-    double Beta = dis(gen);
-
-    // Calculate the received time incorporating Alpha and Beta
-    long double receivedTimeStamp = Alpha * NOW + Beta;
-
-    // Print the received information
-    std::cout << "Original TIME_STAMP: " << originalTimeStamp << std::endl;
-    std::cout << "Received DSYNC_uid_: " << receivedUid << std::endl;
-    std::cout << "Received Time (with Alpha and Beta): " << receivedTimeStamp << std::endl;
-    stateIdle();
+    // This function is intentionally left empty
 }
 
 void UwDSync_node::stateIdle()
 {
+    // This function is intentionally left empty
 }
+

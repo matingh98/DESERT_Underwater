@@ -28,22 +28,22 @@
 
 AM_CXXFLAGS = -Wall -ggdb3
 
-lib_LTLIBRARIES = libuwdsync.la
+lib_LTLIBRARIES = libuwdsync2.la
 check_PROGRAMS =
 
 SUBDIRS =
 
 TESTS =
 
-libuwdsync_la_SOURCES = initlib.cpp \
-    uwdsync_ref.cpp \
-    uwdsync_node.cpp
+libuwdsync2_la_SOURCES = initlib.cpp \
+    uwdsync_A.cpp \
+    uwdsync_B.cpp
 
-libuwdsync_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
-libuwdsync_la_LDFLAGS = @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@
-libuwdsync_la_LIBADD = @NS_LIBADD@ @NSMIRACLE_LIBADD@ @DESERT_LIBADD@
+libuwdsync2_la_CPPFLAGS = @NS_CPPFLAGS@ @NSMIRACLE_CPPFLAGS@ @DESERT_CPPFLAGS@
+libuwdsync2_la_LDFLAGS = @NS_LDFLAGS@ @NSMIRACLE_LDFLAGS@ @DESERT_LDFLAGS@
+libuwdsync2_la_LIBADD = @NS_LIBADD@ @NSMIRACLE_LIBADD@ @DESERT_LIBADD@
 
-nodist_libuwdsync_la_SOURCES = InitTcl.cc
+nodist_libuwdsync2_la_SOURCES = InitTcl.cc
 
 BUILT_SOURCES = InitTcl.cc
 
@@ -52,7 +52,7 @@ CLEANFILES = InitTcl.cc
 TCL_FILES =
 
 InitTcl.cc: Makefile $(TCL_FILES)
-		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsyncTclCode > InitTcl.cc
+		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsync2TclCode > InitTcl.cc
 
 EXTRA_DIST = $(TCL_FILES)
 
