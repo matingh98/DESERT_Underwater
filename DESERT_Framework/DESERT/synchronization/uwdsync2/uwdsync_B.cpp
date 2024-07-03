@@ -48,16 +48,17 @@
 #include <iostream>
 #include <random> // Include the random library
 
-static class UwDSync_B_Class : public TclClass
-{
+static class UwDSync_B_Class : public TclClass {
 public:
     UwDSync_B_Class() : TclClass("Module/UW/DSYNC/B") {}
-    TclObject *create(int, const char *const *) {
+    TclObject* create(int, const char* const *) {
         return (new UwDSync_B());
     }
-} class_module_UwDSync_b;
+} class_module_uwdsync_B;
 
-UwDSync_B::UwDSync_B() : MMac(), timer(this) {}
+UwDSync_B::UwDSync_B() : MMac(), timer(this) {
+    std::cout << "UwDSync_B constructor called" << std::endl;
+}
 
 UwDSync_B::~UwDSync_B() {}
 
@@ -84,49 +85,80 @@ int UwDSync_B::crLayCommand(ClMessage *m) {
     }
 }
 
+void UwDSync_B_Timer::expire(Event *e) {
+    if (module->timer.getCounter() < 5) {
+        module->timer.incrCounter();
+        module->timer.schedule(getRandomBackoffTime());
+    } else {
+        module->stateIdle();
+    }
+    module->TransmittingToNodeA();
+}
+
+
 void UwDSync_B::Phy2MacStartRx(Packet *p) {
     std::cout << "Data received from PHY, forwarding to MAC" << std::endl;
     stateRxTrigger(p);
+    MMac::Phy2MacStartRx(p);
 }
 
+
+
 void UwDSync_B::stateRxTrigger(Packet *p) {
-    hdr_DATA *datah = HDR_DATA(p);  
-    int pktid = datah->ID();        
+    hdr_DATA *datah = HDR_DATA(p);
+    int pktid = datah->ID();
 
     if (pktid == 1) {
         std::cout << "Packet ID 1 received from node A" << std::endl;
-        hdr_cmn *ch = HDR_CMN(p);   
-        ch->size() += sizeof(double); 
+        hdr_cmn *ch = HDR_CMN(p);
+        // ch->size() += sizeof(double);
 
-        datah->ts_[1] = NOW;          
-        datah->ID() = 2;            
+        datah->ts_[1] = NOW;
+        datah->ID() = 2;
+
+        // Store the packet
+        current_packet = p;
         timer.schedule(timer.getRandomBackoffTime());
-
-        hdr_cmn *ch2 = HDR_CMN(p);   
-        ch2->size() += sizeof(double);
-
-        datah->ts_[2] = NOW;          
-        datah->ID() = 3;
-
-        Mac2PhyStartTx(p);          
-        stateIdle(p);
-    }
-    else if (pktid == 4) {
+    } else if (pktid == 4) {
         std::cout << "Packet ID 4 received from node A" << std::endl;
         sendReceivedTimestamp(p);
         stateIdle(p);
-    }
-    else {
+    } else {
         std::cerr << "Not a valid situation" << std::endl;
     }
 }
+
+void UwDSync_B::TransmittingToNodeA() {
+    if (current_packet != nullptr) {
+        hdr_DATA *datah = HDR_DATA(current_packet);
+        hdr_cmn *ch2 = HDR_CMN(current_packet);
+        // ch2->size() += sizeof(double);
+
+        datah->ts_[2] = NOW;
+        datah->ID() = 3;
+
+        Mac2PhyStartTx(current_packet);
+        stateIdle(current_packet);
+
+        // Clear the stored packet
+        current_packet = nullptr;
+    } else {
+        std::cerr << "No packet available to transmit to node A" << std::endl;
+    }
+}
+
+
+// void UwDSync_B::Mac2PhyStartTx(Packet *p)
+// {
+// }
+
 
 void UwDSync_B::stateIdle(Packet *p) {
     if (p != nullptr) {
         hdr_DATA *datah = HDR_DATA(p);
         int pktid = datah->ID();
 
-        if (pktid == 1) {
+        if (pktid == 1 && num_equations < 5) {
             stateRxTrigger(p);
         } else if (pktid == 4 && num_equations < 5) {
             stateRxTrigger(p);
@@ -140,27 +172,14 @@ void UwDSync_B::stateIdle(Packet *p) {
     }
 }
 
-double UwDSync_B::sendReceivedTimestamp(Packet *p) {
+std::vector<double> UwDSync_B::sendReceivedTimestamp(Packet* p) {
     std::cout << "Sending received timestamps" << std::endl;
-    hdr_DATA *datah = HDR_DATA(p);
+    hdr_DATA* datah = HDR_DATA(p);
+    std::vector<double> receivedTimeStamp(4);
     for (int i = 0; i < 4; i++) {
-        receivedTimeStamp[i] = datah->ts_[i]; 
+        receivedTimeStamp[i] = datah->ts_[i];
     }
-    return receivedTimeStamp[0]; 
+    return receivedTimeStamp;
 }
 
-int UwDSync_B::BackOffTimer::getRandomBackoffTime() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(1, 10);
-    return distr(gen);
-}
 
-void UwDSync_B::BackOffTimer::expire(Event *e) {
-    if (module->timer.getCounter() < 5) {
-        module->timer.incrCounter();
-        module->timer.schedule(getRandomBackoffTime());
-    } else {
-        module->stateIdle();
-    }
-}

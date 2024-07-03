@@ -50,25 +50,11 @@
 /**
  * Class that represents the binding with the tcl configuration script
  */
-static class UwDSync_A_Class : public TclClass
-{
+static class UwDSync_A_Class : public TclClass {
 public:
-    /**
-     * Constructor of the class
-     */
-    UwDSync_A_Class()
-        : TclClass("Module/UW/DSYNC/A")
-    {
-    }
-
-    /**
-     * Creates the TCL object needed for the tcl language interpretation
-     * @return Pointer to a TclObject
-     */
-    TclObject *
-    create(int, const char *const *)
-    {
-        return (new UwDSync_A());  // Return a TclObject pointer
+    UwDSync_A_Class() : TclClass("Module/UW/DSYNC/A") {}
+    TclObject* create(int, const char* const *) {
+        return (new UwDSync_A());
     }
 } class_module_uwdsync_A;
 
@@ -77,7 +63,7 @@ int UwDSync_A::command(int argc, const char *const *argv) {
     if (argc == 2) {
         if (strcasecmp(argv[1], "start") == 0) {
             // Logic to start the initial timer
-            initialTimer();
+            timer.initialTimer();
             return TCL_OK;
         } else if (strcasecmp(argv[1], "stop") == 0) {
             // Logic to stop the timer
@@ -89,6 +75,7 @@ int UwDSync_A::command(int argc, const char *const *argv) {
 }
 
 
+
 int UwDSync_A::crLayCommand(ClMessage *m) {
     switch (m->type()) {
     default:
@@ -96,9 +83,8 @@ int UwDSync_A::crLayCommand(ClMessage *m) {
     }
 }
 
-UwDSync_A::UwDSync_A()
-    : MMac(), num_equations(5), pktid(0), timer(this) 
-{
+UwDSync_A::UwDSync_A() : MMac(), num_equations(5), pktid(0), timer(this) {
+    std::cout << "UwDSync_A constructor called" << std::endl;
 }
 
 UwDSync_A::~UwDSync_A()
@@ -107,24 +93,27 @@ UwDSync_A::~UwDSync_A()
 
 std::map<UwDSync_A::UWDSYNC_A_PKT_TYPE, std::string> UwDSync_A::pkt_type_info;
 
-double UwDSync_A::initialTimer()
+
+
+void UwDSync_A_Timer::initialTimer()
 {
     // Check if the timer is not already running
-    if (!timer.isRunning()) {
+    if (start_time == 0.0) {
         // Schedule the timer for 10 minutes (600 seconds)
-        timer.schedule(600);
+        schedule(600.0);
     }
-
     // When the timer expires, it will call the expire method
 }
 
+
 // Assuming you have defined the expire method to handle the transition to stateTxData
-void UwDSync_A::BackOffTimer::expire(Event *e)
+void UwDSync_A_Timer::expire(Event *e)
 {
-    if (module != NULL) {
-        module->stateTxData();
+    if (module != nullptr) {  // Check if module is not null
+        module->stateTxData();  // Call the stateTxData method of the module
     }
 }
+
 
 void UwDSync_A::stateTxData()
 {
@@ -132,6 +121,11 @@ void UwDSync_A::stateTxData()
     initPkt(p);
     Mac2PhyStartTx(p);
 }
+
+// void UwDSync_A::Mac2PhyStartTx(Packet *p)
+// {
+ 
+// }
 
 
 void UwDSync_A::initPkt(Packet *p)
@@ -141,8 +135,8 @@ void UwDSync_A::initPkt(Packet *p)
     hdr_cmn *ch = HDR_CMN(p);
     hdr_DATA *datah = HDR_DATA(p); // Access the hdr_DATA header
 
-    ch->ptype() = PT_MAC;
-    ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA) + sizeof(double); // Include hdr_DATA and t1 data size
+    ch->ptype() = PT_DATA;
+    // ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA) + sizeof(double); // Include hdr_DATA and t1 data size
 
     datah->ts_[0] = NOW; // Set ts_ to current time
     datah->ID() = 1; // Initialize packet ID, if needed
@@ -155,7 +149,10 @@ void UwDSync_A::Phy2MacEndRx(Packet *p)
 {
     // Transition to the state where the packet is ready to be received
     stateRxTrigger(p);
+    MMac::Phy2MacEndRx(p);
 }
+
+
 void UwDSync_A::stateRxTrigger(Packet *p)
 {
     hdr_DATA *datah = HDR_DATA(p);  // Correct macro and type for hdr_DATA
@@ -164,28 +161,28 @@ void UwDSync_A::stateRxTrigger(Packet *p)
     if (pktid == 3) {
         // Add t4 to the packet and send it again to Node B
         hdr_cmn *ch = HDR_CMN(p);   // Correct macro and type for common header
-        ch->size() += sizeof(double); // Add space for t4
+        // ch->size() += sizeof(double); // Add space for t4
 
         datah->ts_[3] = NOW;          // Set ts_ to current time (t4)
 
         datah->ID() = 4;            // Update packet ID
 
-        initialTimer();             // Reset the timer
+        timer.initialTimer();       // Reset the timer
+
         num_equations++;
 
         Mac2PhyStartTx(p);          // Send the packet
 
         stateIdle();                // Transition to idle state
 
-
     } else {
         Packet::free(p);            // Drop the packet
-        initialTimer();             // Reset the timer
+        timer.initialTimer();       // Reset the timer
         stateIdle();                // Transition to idle state
     }
 }
 
-void UwDSync_A::Phy2MacEndTx(const Packet* p){}
+// void UwDSync_A::Phy2MacEndTx(const Packet* p){}
 
 void UwDSync_A::stateIdle(Packet *p)
 {
@@ -199,7 +196,7 @@ void UwDSync_A::stateIdle(Packet *p)
             // Received packet with ID 3
             stateRxTrigger(p);
         } else if (pktid == 4 && num_equations < 5) {
-            initialTimer();
+            timer.initialTimer();
         } else {
             std::cerr << "Not a valid situation" << std::endl;
             Packet::free(p); // Free the packet if it's not valid

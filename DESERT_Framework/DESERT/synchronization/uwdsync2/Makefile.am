@@ -49,7 +49,7 @@ BUILT_SOURCES = InitTcl.cc
 
 CLEANFILES = InitTcl.cc
 
-TCL_FILES =
+TCL_FILES = uwdsync2_default.tcl
 
 InitTcl.cc: Makefile $(TCL_FILES)
 		cat $(VPATH)/$(TCL_FILES) | @TCL2CPP@ uwdsync2TclCode > InitTcl.cc

@@ -99,5 +99,4 @@ SUBDIRS = m4 \
     statistics/uwstats_utilities \
     ranging/uwranging_tokenbus \
     ranging/uwranging_tdma \
-    synchronization/uwdsync \
     synchronization/uwdsync2

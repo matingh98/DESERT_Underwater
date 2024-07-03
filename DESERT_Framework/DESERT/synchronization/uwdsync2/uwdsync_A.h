@@ -36,6 +36,7 @@
  *
  *
  */
+
 #ifndef UWDSYNC_A_H
 #define UWDSYNC_A_H
 
@@ -53,98 +54,88 @@
 #include <list>
 #include <chrono>
 
+// Forward declaration of UwDSync_A (used in UwDSync_A_Timer)
+class UwDSync_A;
+
+/**
+ * Timer handler for UwDSync_A
+ */
+class UwDSync_A_Timer : public TimerHandler {
+public:
+    UwDSync_A_Timer(UwDSync_A *m)
+        : start_time(0.0)
+        , left_duration(0.0)
+        , counter(0)
+        , module(m)
+    {
+        assert(m != NULL);
+    }
+
+    virtual ~UwDSync_A_Timer() {}
+
+    virtual void initialTimer();
+
+    virtual void stop() {
+        force_cancel();
+    }
+
+    virtual void schedule(double val) {
+        start_time = NOW;
+        left_duration = val;
+        resched(val);
+    }
+
+    void resetCounter() {
+        counter = 0;
+    }
+
+    void incrCounter() {
+        ++counter;
+    }
+
+    int getCounter() {
+        return counter;
+    }
+
+    double getDuration() {
+        return left_duration;
+    }
+
+    virtual void expire(Event *e);  
+
+protected:
+    double start_time;
+    double left_duration;
+    int counter;
+    UwDSync_A *module;
+    // UWDSYNC_A_TIMER_STATUS timer_status;
+};
+
 /**
  * Class used to represent the UWDSYNC MAC layer of a node.
  */
 class UwDSync_A : public MMac
 {
+friend class UwDSync_A_Timer;
+
 public:
-    /**
-     * Constructor of the UwDSync_A class
-     */
     UwDSync_A();
-    
-    /**
-     * Destructor of the UwDSync_A class
-     */
     virtual ~UwDSync_A();
-    
-    /**
-     * TCL command interpreter. It implements the following OTcl methods:
-     *
-     * @param argc Number of arguments in <i>argv</i>.
-     * @param argv Array of strings which are the command parameters (Note that
-     * <i>argv[0]</i> is the name of the object).
-     * @return TCL_OK or TCL_ERROR whether the command has been dispatched
-     * successfully or not.
-     */
     virtual int command(int argc, const char *const *argv);
-    
-    /**
-     * Cross-Layer messages interpreter
-     *
-     * @param ClMessage* an instance of ClMessage that represents the message
-     * received
-     * @return <i>0</i> if successful.
-     */
     virtual int crLayCommand(ClMessage *m);
-
-    /**
-     * Initial timer to start the synchronization process
-     */
-    virtual double initialTimer();
-    
-    /**
-     * State to transmit data
-     */
     virtual void stateTxData();
-    
-    /**
-     * Initializes the packet
-     */
     virtual void initPkt(Packet *p);
-    
-	virtual void stateRxTrigger(Packet *p);
-
-    
+    virtual void stateRxTrigger(Packet *p);
     virtual void stateIdle(Packet *p = nullptr);
-
-    
-    /**
-     * Pass the packet to the PHY layer
-     * @param Packet* Pointer to an object of type Packet that represents the
-     * Packet to transmit
-     */
-
-    /**
-     * Method called when the PHY layer finishes transmitting the packet.
-     * @param Packet* Pointer to an object of type Packet that represents the
-     * Packet transmitted
-     */
-    virtual void Phy2MacEndTx(const Packet* p);
-
-    /**
-     * Method called when the Phy Layer starts to receive a Packet
-     * @param const Packet* Pointer to an object of type Packet that represents
-     * the Packet that is in reception
-     */
-
-    /**
-     * Method called when the Phy Layer finishes receiving a Packet
-     * @param const Packet* Pointer to an object of type Packet that represents
-     * the packet received
-     */
+    // virtual void Phy2MacEndTx(const Packet* p);
     virtual void Phy2MacEndRx(Packet *p);
-
-    /**
-     * Static map for packet type information
-     */
+    // virtual void Mac2PhyStartTx(Packet *p);
 
 protected:
     int pktid;                  /**< Packet ID */
     int num_equations;          /**< Number of equations */
-    double initial_timer;       /**< Initial timer */
     double receivedTimeStamp[4]; // Array to hold four timestamps
+    UwDSync_A_Timer timer;
 
     /**< Type of the packet */
     enum UWDSYNC_A_PKT_TYPE {
@@ -157,47 +148,7 @@ protected:
         UWDSYNC_A_RUNNING,
     };
 
-    /**
-     * Timer handler for UwDSync_A
-     */
-    class UwDSync_A_Timer : public TimerHandler {
-    public:
-        UwDSync_A_Timer(UwDSync_A *m);
-        virtual ~UwDSync_A_Timer();
-
-        virtual void stop();
-        virtual void schedule(double val);
-        bool isIdle();
-        bool isRunning();
-        void resetCounter();
-        void incrCounter();
-        int getCounter();
-        double getDuration();
-
-    protected:
-        double start_time;
-        double left_duration;
-        int counter;
-        UwDSync_A *module;
-        UWDSYNC_A_TIMER_STATUS timer_status;
-    };
-
-    /**
-     * Back-off timer for UwDSync_A
-     */
-    class BackOffTimer : public UwDSync_A_Timer {
-    public:
-        BackOffTimer(UwDSync_A *m);
-        virtual ~BackOffTimer();
-
-    protected:
-        virtual void expire(Event *e);
-    };
-
-    BackOffTimer timer; /**< Timer instance */
-
-	static std::map<UwDSync_A::UWDSYNC_A_PKT_TYPE, std::string> pkt_type_info;
-
+    static std::map<UwDSync_A::UWDSYNC_A_PKT_TYPE, std::string> pkt_type_info;
 };
 
 #endif // UWDSYNC_A_H

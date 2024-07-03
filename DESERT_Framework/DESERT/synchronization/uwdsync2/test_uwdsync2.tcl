@@ -58,7 +58,6 @@
 #   +-------------------------+
 #   |   UnderwaterChannel     |
 #   +-------------------------+
-
 ######################################
 # Flags to enable or disable options #
 ######################################
@@ -99,20 +98,22 @@ $ns use-Miracle
 ##################
 # Tcl variables  #
 ##################
+set opt(start_clock)       [clock seconds]
 set opt(nn)                 2 ;# Number of Nodes
 set opt(starttime)          1	
 set opt(stoptime)           1001
-set opt(txduration)         [expr $opt(stoptime) - $opt(starttime)] ;# Duration of the simulation
-set opt(txpower)            160;#158.263 ;#Power transmitted in dB re uPa 185.8 is the maximum
-set opt(propagation_speed) 1500;# m/s
-
+set opt(pktsize)	       125    ;# Packet size in bytes
+set opt(dist_nodes) 	   1000.0    ;# Distance between nodes in m
+set opt(txduration)      [expr $opt(stoptime) - $opt(starttime)]
+set opt(txpower)	 	150.0 
 set opt(maxinterval_)       200
-set opt(freq)               50000.0 ;#Frequency used in Hz
-set opt(bw)                 26000.0 ;#Bandwidth used in Hz
-set opt(bitrate)            20768.0 ;#150000;#bitrate in bps
-set opt(cbr_period)     10
-set opt(pktsize)	1250
-set opt(rngstream)	1
+
+set opt(freq) 			      150000.0
+set opt(bw)              	60000.0
+set opt(bitrate)	 	      7000.0
+set opt(rngstream)          1
+set opt(T_backoff)	 	0
+set opt(N_density)	 	5
 
 if {$opt(bash_parameters)} {
 	if {$argc != 3} {
@@ -127,7 +128,6 @@ if {$opt(bash_parameters)} {
 		return
 	} else {
 		set opt(rngstream)    [lindex $argv 0]
-		set opt(cbr_period) [lindex $argv 1]
 		set opt(pktsize)    [lindex $argv 2]
 	}
 }
@@ -136,161 +136,132 @@ global defaultRNG
 for {set k 0} {$k < $opt(rngstream)} {incr k} {
 	$defaultRNG next-substream
 }
-if {$opt(trace_files)} {
-	set opt(tracefilename) "./test_uwtdma_simple.tr"
+
+
+set opt(tracefilename) "./test_uwdsync.tr"
 	set opt(tracefile) [open $opt(tracefilename) w]
-	set opt(cltracefilename) "./test_uwtdma_simple.cltr"
-	set opt(cltracefile) [open $opt(tracefilename) w]
-} else {
-	set opt(tracefilename) "/dev/null"
-	set opt(tracefile) [open $opt(tracefilename) w]
-	set opt(cltracefilename) "/dev/null"
-	set opt(cltracefile) [open $opt(cltracefilename) w]
-}
 
 
 #########################
 # Module Configuration  #
 #########################
-### APP ###
-Module/UW/CBR set packetSize_          $opt(pktsize)
-Module/UW/CBR set period_              $opt(cbr_period)
-Module/UW/CBR set PoissonTraffic_      2
-Module/UW/CBR set debug_               0
-
-### TDMA MAC ###
-Module/UW/TDMA set frame_duration   3.5
-Module/UW/TDMA set debug_           -7
-Module/UW/TDMA set sea_trial_       1
-Module/UW/TDMA set fair_mode        0
-# FAIR Modality on
-# Remeber to put silent the SetSlotDuration, SetGuardTime and setStartTime call
-# down below
-# Module/UW/TDMA set guard_time       0.1
-# Module/UW/TDMA set tot_slots        3
-
-### Channel ###
-MPropagation/Underwater set practicalSpreading_ 2
-MPropagation/Underwater set debug_              0
-MPropagation/Underwater set windspeed_          10
-MPropagation/Underwater set shipping_           1
 
 
 set channel [new Module/UnderwaterChannel]
+
+MPropagation/Underwater set practicalSpreading_ 1.5
+MPropagation/Underwater set debug_              0
+MPropagation/Underwater set windspeed_          0
+MPropagation/Underwater set shipping_           0
 set propagation [new MPropagation/Underwater]
+
+
+Module/UW/PHYSICAL  set BitRate_                   $opt(bitrate)
+Module/UW/PHYSICAL  set AcquisitionThreshold_dB_   10.0 
+Module/UW/PHYSICAL  set MaxTxSPL_dB_               156
+Module/UW/PHYSICAL  set MinTxSPL_dB_               10
+Module/UW/PHYSICAL  set MaxTxRange_                50000
+Module/UW/PHYSICAL  set CentralFreqOptimization_   0
+Module/UW/PHYSICAL  set BandwidthOptimization_     0
+Module/UW/PHYSICAL  set SPLOptimization_           0
+
 set data_mask [new MSpectralMask/Rect]
 $data_mask setFreq              $opt(freq)
 $data_mask setBandwidth         $opt(bw)
-$data_mask setPropagationSpeed  $opt(propagation_speed)
+$data_mask setPropagationSpeed  1500
 
-### DSYNC ###
+set pos_x(1) 0.0
+set pos_y(1) 0.0
+
+set pos_x(2) 20.0
+set pos_y(2) 20.0
 
 
 
-### PHY ###
-Module/UW/PHYSICAL  set BitRate_                    $opt(bitrate)
-Module/UW/PHYSICAL  set AcquisitionThreshold_dB_    15.0 
-Module/UW/PHYSICAL  set RxSnrPenalty_dB_            0
-Module/UW/PHYSICAL  set TxSPLMargin_dB_             0
-Module/UW/PHYSICAL  set MaxTxSPL_dB_                $opt(txpower)
-Module/UW/PHYSICAL  set MinTxSPL_dB_                10
-Module/UW/PHYSICAL  set MaxTxRange_                 200
-Module/UW/PHYSICAL  set PER_target_                 0    
-Module/UW/PHYSICAL  set CentralFreqOptimization_    0
-Module/UW/PHYSICAL  set BandwidthOptimization_      0
-Module/UW/PHYSICAL  set SPLOptimization_            0
-Module/UW/PHYSICAL  set debug_                      0
 
 ################################
 # Procedure(s) to create nodes #
 ################################
 proc createNode { id } {
+    global ns node channel position opt propagation dsync2 phy pos_x pos_y data_mask interf_data
 
-    global channel ns cbr position node udp portnum ipr ipif
-    global opt mll mac propagation data_mask interf_data dsync2
-    
-    set node($id) [$ns create-M_Node $opt(tracefile) $opt(cltracefile)] 
-	for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
-		set cbr($id,$cnt)  [new Module/UW/CBR] 
-	}
-
+    set node($id) [$ns create-M_Node $opt(tracefile)] 
+    puts "Node $id created: $node($id)"
     if { $id == 1 } {
         set dsync2($id) [new Module/UW/DSYNC/A]
+        puts "Node $id: DSYNC/A created: $dsync2($id)"
     } else { 
-        set dsync2($id) [new Module/UW/DSYNC/B]  
+        set dsync2($id) [new Module/UW/DSYNC/B]
+        puts "Node $id: DSYNC/B created: $dsync2($id)"
     } 
-    set phy($id)  [new Module/UW/PHYSICAL]  
-    
-    
+    set phy_data($id)  [new Module/UW/PHYSICAL]
+    puts "Node $id: PHYSICAL module created: $phy_data($id)"
 
-    $node($id) addModule 2 $dsync2($id) 1  "DSYNC2"
-    $node($id) addModule 1 $phy($id)   1  "PHY"
-
-    for {set cnt 0} {$cnt < $opt(nn)} {incr cnt} {
-        $node($id) setConnection $cbr($id,$cnt)   $udp($id)   0
-        set portnum($id,$cnt) [$udp($id) assignPort $cbr($id,$cnt) ]
+    # Adding modules to the node
+    puts "Adding DSYNC2 module to Node $id"
+    if { [catch { $node($id) addModule 2 $dsync2($id) 1 "DSYNC2" } errorMsg] } {
+        puts "Error adding DSYNC2 module to Node $id: $errorMsg"
+        return
     }
+    puts "Node $id: DSYNC2 module added"
 
+    puts "Adding PHY module to Node $id"
+    if { [catch { $node($id) addModule 1 $phy_data($id) 1 "PHY" } errorMsg] } {
+        puts "Error adding PHY module to Node $id: $errorMsg"
+        return
+    }
+    puts "Node $id: PHYSICAL module added"
 
-    $node($id) setConnection $dsync2($id) $phy($id)   1
-    $node($id) addToChannel  $channel    $phy($id)   1
-
+    $node($id) setConnection $dsync2($id) $phy_data($id) 1
+    $node($id) addToChannel $channel $phy_data($id) 1
 
     set position($id) [new "Position/BM"]
     $node($id) addPosition $position($id)
-    
-    #Setup positions
-    $position($id) setX_ [expr $id*20]
-    $position($id) setY_ [expr $id*20]
+
+    $position($id) setX_ $pos_x($id)
+    $position($id) setY_ $pos_y($id)
     $position($id) setZ_ -100
 
-    #Interference model
+
+#Interference model
     set interf_data($id)  [new "Module/UW/INTERFERENCE"]
     $interf_data($id) set maxinterval_ $opt(maxinterval_)
     $interf_data($id) set debug_       0
 
-    #Propagation model
-    $phy($id) setPropagation $propagation
-    
-    $phy($id) setSpectralMask $data_mask
-    $phy($id) setInterference $interf_data($id)
-    $phy($id) setInterferenceModel "MEANPOWER"
+    $phy_data($id) setSpectralMask $data_mask
+    $phy_data($id) setInterference $interf_data($id)
+    $phy_data($id) setPropagation $propagation
+    $phy_data($id) set debug_ 0
+    $phy_data($id) setInterferenceModel "MEANPOWER"
+
+    puts "Node $id setup complete"
 }
 
 #################
 # Node Creation #
 #################
 # Create here all the nodes you want to network together
-for {set id 0} {$id < $opt(nn)} {incr id}  {
+for {set id 1} {$id <= $opt(nn)} {incr id} {
     createNode $id
-    puts "Node $id created"
+    puts "Node $id fully initialized"
 }
-
-
-
-
 #####################
 # Start/Stop Timers #
 #####################
 # Set here the timers to start and/or stop modules (optional)
-# e.g., 
-# Set here the timers to start and/or stop modules (optional)
-# e.g., 
-
-for {set ii 0} {$ii < $opt(nn)} {incr ii} {
-    $ns at $opt(starttime)    "$dsync2($ii) start"
-    $ns at $opt(stoptime)     "$dsync2($ii) stop"
+for {set ii 1} {$ii < $opt(nn)} {incr ii} {
+    $ns at $opt(starttime) "$dsync2($ii) start"
+    $ns at $opt(stoptime) "$dsync2($ii) stop"
 }
+
 ###################
 # Final Procedure #
 ###################
 # Define here the procedure to call at the end of the simulation
 proc finish {} {
     global ns opt outfile
-    global mac propagation cbr_sink mac_sink phy_data phy_data_sink channel db_manager propagation
-    global node_coordinates
-    global ipr_sink ipr ipif udp cbr phy phy_data_sink
-    global node_stats tmp_node_stats sink_stats tmp_sink_stats
+    global phy_data channel propagation
+    global phy
     global dsync2
     
     if {$opt(verbose)} {
@@ -305,99 +276,15 @@ proc finish {} {
        puts "-----------------------------------------------------------------"
     }
 
-    set sum_cbr_throughput    0
-    set sum_mac_sent_pkts     0
-    set sum_mac_recv_pkts     0    
-    set sum_sent_pkts     0.0
-    set sum_recv_pkts     0.0    
-    set sum_pcks_in_buffer    0
-    set sum_upper_pcks_rx     0
-    set sum_mac_pcks_tx       0
-    set cbr_throughput        0
-    set sent_pkts 0
-    set recv_pkts 0
-
-    for {set i 0} {$i < $opt(nn)} {incr i}  {
-        set mac_sent_pkts        [$mac($i) get_sent_pkts]
-        set mac_recv_pkts        [$mac($i) get_recv_pkts]
-
-        for {set j 0} {$j < $opt(nn)} {incr j} {
-            if {$i != $j && [info exists cbr($i,$j)]} {
-                set cbr_throughput        [$cbr($i,$j) getthr]
-                set sent_pkts        [$cbr($i,$j) getsentpkts]
-                set recv_pkts        [$cbr($i,$j) getrecvpkts]
-                set sum_cbr_throughput [expr $sum_cbr_throughput + $cbr_throughput]
-                set sum_sent_pkts  [expr $sum_sent_pkts + $sent_pkts]
-                set sum_recv_pkts  [expr $sum_recv_pkts + $recv_pkts]
-            }
-        }
-        set sum_upper_pcks_rx  [expr $sum_upper_pcks_rx + [$mac($i) get_upper_data_pkts_rx]]
-        set sum_mac_pcks_tx    [expr $sum_mac_pcks_tx + [$mac($i) getDataPktsTx]]
-        set sum_mac_sent_pkts  [expr $sum_mac_sent_pkts + $mac_sent_pkts]
-        set sum_mac_recv_pkts  [expr $sum_mac_recv_pkts + $mac_recv_pkts]
-        set sum_pcks_in_buffer [expr $sum_pcks_in_buffer + [$mac($i) get_buffer_size]]
-    }
-
-    set per_cbr1 0
-    set per_cbr2 0
-    set per_cbr3 0
-    set per_cbr4 0
-    set per_cbr5 0
-    set per_cbr6 0
-
-    if {[info exists cbr(0,1)]} {
-        set per_cbr1 [$cbr(0,1) getper]
-    }
-    if {[info exists cbr(1,0)]} {
-        set per_cbr2 [$cbr(1,0) getper]
-    }
-    if {[info exists cbr(0,2)]} {
-        set per_cbr3 [$cbr(0,2) getper]
-    }
-    if {[info exists cbr(2,0)]} {
-        set per_cbr4 [$cbr(2,0) getper]
-    }
-    if {[info exists cbr(1,2)]} {
-        set per_cbr5 [$cbr(1,2) getper]
-    }
-    if {[info exists cbr(2,1)]} {
-        set per_cbr6 [$cbr(2,1) getper]
-    }
-
-    if {$opt(verbose)} {
-        puts "Mean Throughput          : [expr ($sum_cbr_throughput/(($opt(nn))*($opt(nn)-1)))]"
-        puts "MAC sent Packets         : $sum_mac_sent_pkts"
-        puts "MAC received Packets     : $sum_mac_recv_pkts"
-        puts "MAC upper_pcks_rx        : $sum_upper_pcks_rx"
-        puts "CBR sent Packets         : $sum_sent_pkts"
-        puts "CBR received Packets     : $sum_recv_pkts"
-        puts "Packets in buffer        : $sum_pcks_in_buffer"
-        puts "PER CBR (0,1)            : $per_cbr1 "
-        puts "PER CBR (1,0)            : $per_cbr2 "
-        puts "PER CBR (0,2)            : $per_cbr3 "
-        puts "PER CBR (2,0)            : $per_cbr4 "
-        puts "PER CBR (1,2)            : $per_cbr5 "
-        puts "PER CBR (2,1)            : $per_cbr6 "
-    }
-
-    $ns flush-trace
-    close $outfile
-    close $tracefile_fd
-    close $cltracefile_fd
-    exit 0
 }
-
-
-
-
 ###################
 # start simulation
 ###################
-if ($opt(verbose)) {
+if {$opt(verbose)} {
     puts "\nStarting Simulation\n"
 }
 
-
-$ns at [expr $opt(stoptime) + 50.0]  "finish; $ns halt" 
+$ns at [expr $opt(stoptime) + 50.0] "finish; $ns halt" 
 
 $ns run
+

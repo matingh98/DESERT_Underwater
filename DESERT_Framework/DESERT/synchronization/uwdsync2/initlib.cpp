@@ -41,12 +41,10 @@
 #include "sap.h"
 #include "packet.h"
 
-extern EmbeddedTcl uwdsync2TclCode;
-extern "C" int Uwdsync2_Init()
-{
-    uwdsync2TclCode.load();
-    return 0;
-}
+
+int hdr_DATA::offset_ = 0;
+packet_t PT_DATA;
+
 
 class DSync2HeaderClass : public PacketHeaderClass
 {
@@ -55,7 +53,20 @@ public:
     : PacketHeaderClass("PacketHeader/DSYN2CPROTO", sizeof(hdr_DATA))
     {
         this->bind();
+        bind_offset(&hdr_DATA::offset_);
+
     }
-};
+} class_hdr_DATA;
+
+extern EmbeddedTcl uwdsync2TclCode;
+
+extern "C" int Uwdsync_Init()
+{
+
+    PT_DATA = p_info::addPacket("UWDSYNC/DATA");
+    uwdsync2TclCode.load();
+    return 0;
+}
+
 
 
