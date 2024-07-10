@@ -29,7 +29,7 @@
 # Author: Favaro Federico
 # version: 1.0.0
 
-PacketHeaderManager set tab_(PacketHeader/DSYNC2PROTO) 1
+PacketHeaderManager set tab_(PacketHeader/DSYN2CPROTO) 1
 
 
 

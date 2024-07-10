@@ -62,8 +62,9 @@ class UwDSync_A;
  */
 class UwDSync_A_Timer : public TimerHandler {
 public:
-    UwDSync_A_Timer(UwDSync_A *m)
-        : start_time(0.0)
+    UwDSync_A_Timer(UwDSync_A *m, double *start, double *stop)
+        : start_time(start)
+        , stop_time(stop)
         , left_duration(0.0)
         , counter(0)
         , module(m)
@@ -80,7 +81,9 @@ public:
     }
 
     virtual void schedule(double val) {
-        start_time = NOW;
+        if (start_time) {
+            *start_time = NOW;
+        }
         left_duration = val;
         resched(val);
     }
@@ -93,34 +96,33 @@ public:
         ++counter;
     }
 
-    int getCounter() {
+    int getCounter() const {
         return counter;
     }
 
-    double getDuration() {
+    double getDuration() const {
         return left_duration;
     }
 
-    virtual void expire(Event *e);  
+    virtual void expire(Event *e);
 
 protected:
-    double start_time;
+    double *start_time;
+    double *stop_time;
     double left_duration;
     int counter;
     UwDSync_A *module;
-    // UWDSYNC_A_TIMER_STATUS timer_status;
 };
 
 /**
  * Class used to represent the UWDSYNC MAC layer of a node.
  */
-class UwDSync_A : public MMac
-{
-friend class UwDSync_A_Timer;
-
+class UwDSync_A : public MMac {
 public:
     UwDSync_A();
     virtual ~UwDSync_A();
+    virtual void start();
+    virtual void stop();
     virtual int command(int argc, const char *const *argv);
     virtual int crLayCommand(ClMessage *m);
     virtual void stateTxData();
@@ -129,12 +131,22 @@ public:
     virtual void stateIdle(Packet *p = nullptr);
     // virtual void Phy2MacEndTx(const Packet* p);
     virtual void Phy2MacEndRx(Packet *p);
-    // virtual void Mac2PhyStartTx(Packet *p);
+
+    double getStartTime() const {
+        return start_time;
+    }
+
+    double getStopTime() const {
+        return stop_time;
+    }
 
 protected:
     int pktid;                  /**< Packet ID */
     int num_equations;          /**< Number of equations */
     double receivedTimeStamp[4]; // Array to hold four timestamps
+    double start_time;
+    double stop_time;
+    int debug;
     UwDSync_A_Timer timer;
 
     /**< Type of the packet */

@@ -58,22 +58,42 @@ public:
     }
 } class_module_uwdsync_A;
 
-int UwDSync_A::command(int argc, const char *const *argv) {
-    Tcl &tcl = Tcl::instance();
-    if (argc == 2) {
-        if (strcasecmp(argv[1], "start") == 0) {
-            // Logic to start the initial timer
-            timer.initialTimer();
-            return TCL_OK;
-        } else if (strcasecmp(argv[1], "stop") == 0) {
-            // Logic to stop the timer
-            timer.stop();
-            return TCL_OK;
-        }
-    }
-    return MMac::command(argc, argv);
+UwDSync_A::UwDSync_A()
+    : MMac()
+    , pktid(0)
+    , num_equations(5)
+    , start_time(0)
+    , stop_time(1001)
+    , timer(this, &start_time, &stop_time) // Pass pointers to start_time and stop_time
+{
+    std::cout << "UwDSync_A constructor called" << std::endl;
+    bind("start_time_", &start_time);
+    bind("stop_time_", &stop_time);
+    bind("debug_", &debug);
+
 }
 
+UwDSync_A::~UwDSync_A()
+{
+}
+
+
+// start Methode
+void UwDSync_A::start() {
+    std::cout << "UwDSync_A start method called" << std::endl;
+    timer.initialTimer();
+}
+
+//stop Methode
+void UwDSync_A::stop() {
+    std::cout << "UwDSync_A stop method called" << std::endl;
+    timer.stop();
+}
+ 
+
+//ask for stop time and start time
+int UwDSync_A::command(int argc, const char *const *argv) {
+}
 
 
 int UwDSync_A::crLayCommand(ClMessage *m) {
@@ -83,26 +103,18 @@ int UwDSync_A::crLayCommand(ClMessage *m) {
     }
 }
 
-UwDSync_A::UwDSync_A() : MMac(), num_equations(5), pktid(0), timer(this) {
-    std::cout << "UwDSync_A constructor called" << std::endl;
-}
-
-UwDSync_A::~UwDSync_A()
-{
-}
-
-std::map<UwDSync_A::UWDSYNC_A_PKT_TYPE, std::string> UwDSync_A::pkt_type_info;
 
 
 
-void UwDSync_A_Timer::initialTimer()
-{
+
+void UwDSync_A_Timer::initialTimer() {
     // Check if the timer is not already running
-    if (start_time == 0.0) {
+    if (*start_time == 0) {
         // Schedule the timer for 10 minutes (600 seconds)
-        schedule(600.0);
+        schedule(*stop_time);
+    } else {
+        std::cout << "Something wrong happened" << std::endl;
     }
-    // When the timer expires, it will call the expire method
 }
 
 
@@ -130,13 +142,12 @@ void UwDSync_A::stateTxData()
 
 void UwDSync_A::initPkt(Packet *p)
 {
-    p = Packet::alloc(); // Allocate memory for the packet
     hdr_mac *mach = HDR_MAC(p);
     hdr_cmn *ch = HDR_CMN(p);
     hdr_DATA *datah = HDR_DATA(p); // Access the hdr_DATA header
 
     ch->ptype() = PT_DATA;
-    // ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA) + sizeof(double); // Include hdr_DATA and t1 data size
+    ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA) ; // Include hdr_DATA and t1 data size
 
     datah->ts_[0] = NOW; // Set ts_ to current time
     datah->ID() = 1; // Initialize packet ID, if needed
@@ -160,8 +171,7 @@ void UwDSync_A::stateRxTrigger(Packet *p)
 
     if (pktid == 3) {
         // Add t4 to the packet and send it again to Node B
-        hdr_cmn *ch = HDR_CMN(p);   // Correct macro and type for common header
-        // ch->size() += sizeof(double); // Add space for t4
+        // hdr_cmn *ch = HDR_CMN(p);   // Remove this line if not used
 
         datah->ts_[3] = NOW;          // Set ts_ to current time (t4)
 

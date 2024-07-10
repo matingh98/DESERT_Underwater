@@ -48,13 +48,13 @@
 #include <iostream>
 #include <random> // Include the random library
 
-static class UwDSync_B_Class : public TclClass {
+static class UwDSync_BClass : public TclClass {
 public:
-    UwDSync_B_Class() : TclClass("Module/UW/DSYNC/B") {}
-    TclObject* create(int, const char* const *) {
+    UwDSync_BClass() : TclClass("Module/UW/DSYNC/B") {}
+    TclObject* create(int, const char*const*) {
         return (new UwDSync_B());
     }
-} class_module_uwdsync_B;
+} class_UwDSync_B;
 
 UwDSync_B::UwDSync_B() : MMac(), timer(this) {
     std::cout << "UwDSync_B constructor called" << std::endl;
@@ -63,10 +63,12 @@ UwDSync_B::UwDSync_B() : MMac(), timer(this) {
 UwDSync_B::~UwDSync_B() {}
 
 
+
+
+
 int UwDSync_B::command(int argc, const char *const *argv) {
     Tcl &tcl = Tcl::instance();
-    if (argc == 2) {
-        if (strcasecmp(argv[1], "get_timestamp") == 0) {
+   if (strcasecmp(argv[1], "get_timestamp") == 0) {
             std::stringstream ss;
             for (int i = 0; i < 4; i++) {
                 ss << receivedTimeStamp[i] << " ";
@@ -74,9 +76,10 @@ int UwDSync_B::command(int argc, const char *const *argv) {
             tcl.resultf("%s", ss.str().c_str());
             return TCL_OK;
         }
-    }
+
     return MMac::command(argc, argv);
 }
+
 
 int UwDSync_B::crLayCommand(ClMessage *m) {
     switch (m->type()) {
@@ -111,7 +114,7 @@ void UwDSync_B::stateRxTrigger(Packet *p) {
     if (pktid == 1) {
         std::cout << "Packet ID 1 received from node A" << std::endl;
         hdr_cmn *ch = HDR_CMN(p);
-        // ch->size() += sizeof(double);
+        
 
         datah->ts_[1] = NOW;
         datah->ID() = 2;
@@ -132,7 +135,7 @@ void UwDSync_B::TransmittingToNodeA() {
     if (current_packet != nullptr) {
         hdr_DATA *datah = HDR_DATA(current_packet);
         hdr_cmn *ch2 = HDR_CMN(current_packet);
-        // ch2->size() += sizeof(double);
+        ch2->size() += sizeof(hdr_DATA);
 
         datah->ts_[2] = NOW;
         datah->ID() = 3;
@@ -175,11 +178,8 @@ void UwDSync_B::stateIdle(Packet *p) {
 std::vector<double> UwDSync_B::sendReceivedTimestamp(Packet* p) {
     std::cout << "Sending received timestamps" << std::endl;
     hdr_DATA* datah = HDR_DATA(p);
-    std::vector<double> receivedTimeStamp(4);
     for (int i = 0; i < 4; i++) {
         receivedTimeStamp[i] = datah->ts_[i];
     }
-    return receivedTimeStamp;
+    return std::vector<double>(receivedTimeStamp, receivedTimeStamp + 4);
 }
-
-

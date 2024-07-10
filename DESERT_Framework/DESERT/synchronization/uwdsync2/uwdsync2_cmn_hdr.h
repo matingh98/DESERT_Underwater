@@ -46,14 +46,15 @@
 
 #include <list>
 #define HDR_DATA(p)                                                       \
-	(hdr_DATA::access(p)) /**< alias defined to access the TRIGGER HEADER \
+    (hdr_DATA::access(p)) /**< alias defined to access the TRIGGER HEADER */
 	
 extern packet_t PT_DATA;
 
 
 /**
  * Header of the POLL message
- */
+ **/
+
 typedef struct hdr_DATA {
 	double ts_[4]; /**< Timestamp of the most recent data packet */
 	int pktid_; /**< ID of the packet */
@@ -70,7 +71,6 @@ typedef struct hdr_DATA {
 	}
 
 	
-
 	/**
 	 * Reference to the offset variable
 	 */

@@ -123,7 +123,6 @@ friend class UwDSync_B_Timer;
 public:
     UwDSync_B();
     virtual ~UwDSync_B();
-
     virtual int command(int argc, const char *const *argv);
     virtual int crLayCommand(ClMessage *m);
     virtual void stateRxTrigger(Packet *p);
