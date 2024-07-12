@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2017 Regents of the SIGNET lab, University of Padova.
 // All rights reserved.
 //

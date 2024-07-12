@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2017 Regents of the SIGNET lab, University of Padova.
 // All rights reserved.
 //
@@ -61,10 +60,6 @@ UwDSync_B::UwDSync_B() : MMac(), timer(this) {
 }
 
 UwDSync_B::~UwDSync_B() {}
-
-
-
-
 
 int UwDSync_B::command(int argc, const char *const *argv) {
     Tcl &tcl = Tcl::instance();

@@ -87,7 +87,7 @@ load libUwmStdPhyBpskTracer.so
 load libuwphy_clmsgs.so
 load libuwstats_utilities.so
 load libuwphysical.so
-load libuwdsync2.so
+load libuwsync.so
 #############################
 # NS-Miracle initialization #
 #############################
@@ -178,8 +178,6 @@ set pos_x(2) 20.0
 set pos_y(2) 20.0
 
 
-Module/UW/DSYNC/A set start_time_ $opt(starttime)
-Module/UW/DSYNC/A set stop_time_  $opt(stoptime)
 
 
 
@@ -192,28 +190,22 @@ proc createNode { id } {
     
     global channel propagation data_mask ns cbr position node udp portnum ipr ipif channel_estimator
     global phy_data posdb opt rvposx rvposy rvposz mhrouting mll mac woss_utilities woss_creator db_manager
-    global row pos_x pos_y dsync2
+    global row pos_x pos_y sync
     
     set node($id) [$ns create-M_Node $opt(tracefile)]
-    	Module/UW/PHYSICAL  set debug_ 0
+    Module/UW/PHYSICAL  set debug_ 0
 
-    if { $id == 1 } {
-        set dsync2($id) [new Module/UW/DSYNC/A]
-        put "DSYNC2 id inside [$dsync2($id) Id_]"
-    } elseif {$id ==2} {
+    set sync($id) [new Module/UW/SYNC/REF]
 
-        set dsync2($id) [new Module/UW/DSYNC/A]
 
-    }
-
-    put "DSYNC2 id [$dsync2($id) Id_]"
+    puts "SYNC id [$sync($id) Id_]"
 
     set phy_data($id)  [new Module/UW/PHYSICAL]
 
-    # $node($id)  addModule 2 $dsync2($id)     1  "MAC"
+    $node($id)  addModule 2 $sync($id)     1  "SYNC"
     $node($id)  addModule 1 $phy_data($id)   1  "PHY"
 
-    # $node($id) setConnection $dsync2($id)   $phy_data($id)   1
+    $node($id) setConnection $sync($id)   $phy_data($id)   1
     $node($id) addToChannel  $channel       $phy_data($id)   1
 
 
@@ -269,7 +261,7 @@ proc finish {} {
     global ns opt outfile
     global phy_data channel propagation
     global phy
-    global dsync2
+
     
     if {$opt(verbose)} {
        puts "-----------------------------------------------------------------"
@@ -277,9 +269,6 @@ proc finish {} {
        puts "-----------------------------------------------------------------"
        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
        puts "Number of nodes          : $opt(nn)"
-       if {[info exists dsync2(2)]} {
-           puts "Received Time            : [$dsync2(2) get_timestamp]"
-       }
        puts "-----------------------------------------------------------------"
     }
 
