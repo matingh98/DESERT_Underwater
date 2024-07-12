@@ -36,7 +36,6 @@
  *
  *
  */
-
 #ifndef UWDSYNC_A_H
 #define UWDSYNC_A_H
 
@@ -44,6 +43,7 @@
 #include "mmac.h"
 #include "packet.h"
 #include "rng.h"
+#include "config.h" // Include the config.h header for NS-2
 
 #include <iostream>
 #include <string>
@@ -129,7 +129,6 @@ public:
     virtual void initPkt(Packet *p);
     virtual void stateRxTrigger(Packet *p);
     virtual void stateIdle(Packet *p = nullptr);
-    // virtual void Phy2MacEndTx(const Packet* p);
     virtual void Phy2MacEndRx(Packet *p);
 
     double getStartTime() const {
@@ -146,8 +145,7 @@ protected:
     double receivedTimeStamp[4]; // Array to hold four timestamps
     double start_time;
     double stop_time;
-    int debug;
-    UwDSync_A_Timer timer;
+    UwDSync_A_Timer timer;      /**< Timer object */
 
     /**< Type of the packet */
     enum UWDSYNC_A_PKT_TYPE {

@@ -104,13 +104,13 @@ set opt(starttime)          1
 set opt(stoptime)           1001
 set opt(pktsize)	       125    ;# Packet size in bytes
 set opt(dist_nodes) 	   1000.0    ;# Distance between nodes in m
-set opt(txduration)      [expr $opt(stoptime) - $opt(starttime)]
-set opt(txpower)	 	150.0 
+set opt(txduration)        [expr $opt(stoptime) - $opt(starttime)]
+set opt(txpower)	    	150.0 
 set opt(maxinterval_)       200
 
 set opt(freq) 			      150000.0
 set opt(bw)              	60000.0
-set opt(bitrate)	 	      7000.0
+set opt(bitrate)	 	      1000.0
 set opt(rngstream)          1
 set opt(T_backoff)	 	0
 set opt(N_density)	 	5
@@ -165,6 +165,7 @@ Module/UW/PHYSICAL  set CentralFreqOptimization_   0
 Module/UW/PHYSICAL  set BandwidthOptimization_     0
 Module/UW/PHYSICAL  set SPLOptimization_           0
 
+
 set data_mask [new MSpectralMask/Rect]
 $data_mask setFreq              $opt(freq)
 $data_mask setBandwidth         $opt(bw)
@@ -177,65 +178,68 @@ set pos_x(2) 20.0
 set pos_y(2) 20.0
 
 
+Module/UW/DSYNC/A set start_time_ $opt(starttime)
+Module/UW/DSYNC/A set stop_time_  $opt(stoptime)
+
+
 
 
 ################################
 # Procedure(s) to create nodes #
 ################################
-proc createNode { id } {
-    global ns node channel position opt propagation dsync2 phy pos_x pos_y data_mask interf_data
 
-    set node($id) [$ns create-M_Node $opt(tracefile)] 
-    puts "Node $id created: $node($id)"
+proc createNode { id } {
+    
+    global channel propagation data_mask ns cbr position node udp portnum ipr ipif channel_estimator
+    global phy_data posdb opt rvposx rvposy rvposz mhrouting mll mac woss_utilities woss_creator db_manager
+    global row pos_x pos_y dsync2
+    
+    set node($id) [$ns create-M_Node $opt(tracefile)]
+    	Module/UW/PHYSICAL  set debug_ 0
+
     if { $id == 1 } {
         set dsync2($id) [new Module/UW/DSYNC/A]
-        puts "Node $id: DSYNC/A created: $dsync2($id)"
-    } else { 
+    } elseif {$id ==2} {
+
         set dsync2($id) [new Module/UW/DSYNC/B]
-        puts "Node $id: DSYNC/B created: $dsync2($id)"
-    } 
+
+    }
+
     set phy_data($id)  [new Module/UW/PHYSICAL]
-    puts "Node $id: PHYSICAL module created: $phy_data($id)"
 
-    # Adding modules to the node
-    puts "Adding DSYNC2 module to Node $id"
-    if { [catch { $node($id) addModule 2 $dsync2($id) 1 "DSYNC2" } errorMsg] } {
-        puts "Error adding DSYNC2 module to Node $id: $errorMsg"
-        return
-    }
-    puts "Node $id: DSYNC2 module added"
+    $node($id)  addModule 2 $dsync2($id)     1  "DSYNC2"
+    $node($id)  addModule 1 $phy_data($id)   1  "PHY"
 
-    puts "Adding PHY module to Node $id"
-    if { [catch { $node($id) addModule 1 $phy_data($id) 1 "PHY" } errorMsg] } {
-        puts "Error adding PHY module to Node $id: $errorMsg"
-        return
-    }
-    puts "Node $id: PHYSICAL module added"
+    $node($id) setConnection $dsync2($id)   $phy_data($id)   1
+    $node($id) addToChannel  $channel       $phy_data($id)   1
 
-    $node($id) setConnection $dsync2($id) $phy_data($id) 1
-    $node($id) addToChannel $channel $phy_data($id) 1
+
 
     set position($id) [new "Position/BM"]
     $node($id) addPosition $position($id)
-
+    
+    #Setup positions
     $position($id) setX_ $pos_x($id)
     $position($id) setY_ $pos_y($id)
     $position($id) setZ_ -100
 
-
-#Interference model
-    set interf_data($id)  [new "Module/UW/INTERFERENCE"]
+    
+    
+    set interf_data($id) [new "Module/UW/INTERFERENCE"]
     $interf_data($id) set maxinterval_ $opt(maxinterval_)
     $interf_data($id) set debug_       0
 
+
+    
     $phy_data($id) setSpectralMask $data_mask
     $phy_data($id) setInterference $interf_data($id)
     $phy_data($id) setPropagation $propagation
     $phy_data($id) set debug_ 0
-    $phy_data($id) setInterferenceModel "MEANPOWER"
+	$phy_data($id) setInterferenceModel "MEANPOWER"
 
-    puts "Node $id setup complete"
+
 }
+
 
 #################
 # Node Creation #
@@ -248,11 +252,11 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
 #####################
 # Start/Stop Timers #
 #####################
-# Set here the timers to start and/or stop modules (optional)
-for {set ii 1} {$ii < $opt(nn)} {incr ii} {
-    $ns at $opt(starttime) "$dsync2($ii) start"
-    $ns at $opt(stoptime) "$dsync2($ii) stop"
-}
+# # Set here the timers to start and/or stop modules (optional)
+# for {set ii 1} {$ii < $opt(nn)} {incr ii} {
+#     $ns at $opt(starttime) "$dsync2($ii) start"
+#     $ns at $opt(stoptime) "$dsync2($ii) stop"
+# }
 
 ###################
 # Final Procedure #
@@ -270,8 +274,8 @@ proc finish {} {
        puts "-----------------------------------------------------------------"
        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
        puts "Number of nodes          : $opt(nn)"
-       if {[info exists dsync2(1)]} {
-           puts "Received Time            : [$dsync2(1) get_timestamp]"
+       if {[info exists dsync2(2)]} {
+           puts "Received Time            : [$dsync2(2) get_timestamp]"
        }
        puts "-----------------------------------------------------------------"
     }

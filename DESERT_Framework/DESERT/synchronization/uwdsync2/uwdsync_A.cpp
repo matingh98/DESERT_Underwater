@@ -34,7 +34,6 @@
  * \brief Implementation of uwdsync_A class
  *
  */
-
 #include "uwdsync2_cmn_hdr.h"
 #include "uwdsync_A.h"
 #include "mmac.h"
@@ -42,6 +41,7 @@
 #include "uwcbr-module.h"
 #include "mphy_pktheader.h"
 #include "rng.h"
+#include "config.h" // Include the config.h header for NS-2
 
 #include <algorithm>
 #include <sstream>
@@ -62,21 +62,18 @@ UwDSync_A::UwDSync_A()
     : MMac()
     , pktid(0)
     , num_equations(5)
-    , start_time(0)
-    , stop_time(1001)
-    , timer(this, &start_time, &stop_time) // Pass pointers to start_time and stop_time
+    , start_time(0.0)
+    , stop_time(1001.0)
+    , timer(this, &start_time, &stop_time) 
 {
     std::cout << "UwDSync_A constructor called" << std::endl;
     bind("start_time_", &start_time);
     bind("stop_time_", &stop_time);
-    bind("debug_", &debug);
-
 }
 
 UwDSync_A::~UwDSync_A()
 {
 }
-
 
 // start Methode
 void UwDSync_A::start() {
@@ -89,12 +86,12 @@ void UwDSync_A::stop() {
     std::cout << "UwDSync_A stop method called" << std::endl;
     timer.stop();
 }
- 
 
 //ask for stop time and start time
 int UwDSync_A::command(int argc, const char *const *argv) {
+    // Add command handling logic here
+    return TCL_ERROR;
 }
-
 
 int UwDSync_A::crLayCommand(ClMessage *m) {
     switch (m->type()) {
@@ -102,10 +99,6 @@ int UwDSync_A::crLayCommand(ClMessage *m) {
         return MMac::crLayCommand(m);
     }
 }
-
-
-
-
 
 void UwDSync_A_Timer::initialTimer() {
     // Check if the timer is not already running
@@ -117,7 +110,6 @@ void UwDSync_A_Timer::initialTimer() {
     }
 }
 
-
 // Assuming you have defined the expire method to handle the transition to stateTxData
 void UwDSync_A_Timer::expire(Event *e)
 {
@@ -126,19 +118,12 @@ void UwDSync_A_Timer::expire(Event *e)
     }
 }
 
-
 void UwDSync_A::stateTxData()
 {
     Packet *p = Packet::alloc();
     initPkt(p);
     Mac2PhyStartTx(p);
 }
-
-// void UwDSync_A::Mac2PhyStartTx(Packet *p)
-// {
- 
-// }
-
 
 void UwDSync_A::initPkt(Packet *p)
 {
@@ -147,7 +132,7 @@ void UwDSync_A::initPkt(Packet *p)
     hdr_DATA *datah = HDR_DATA(p); // Access the hdr_DATA header
 
     ch->ptype() = PT_DATA;
-    ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA) ; // Include hdr_DATA and t1 data size
+    ch->size() = sizeof(hdr_mac) + sizeof(hdr_DATA); // Include hdr_DATA and t1 data size
 
     datah->ts_[0] = NOW; // Set ts_ to current time
     datah->ID() = 1; // Initialize packet ID, if needed
@@ -163,7 +148,6 @@ void UwDSync_A::Phy2MacEndRx(Packet *p)
     MMac::Phy2MacEndRx(p);
 }
 
-
 void UwDSync_A::stateRxTrigger(Packet *p)
 {
     hdr_DATA *datah = HDR_DATA(p);  // Correct macro and type for hdr_DATA
@@ -171,20 +155,12 @@ void UwDSync_A::stateRxTrigger(Packet *p)
 
     if (pktid == 3) {
         // Add t4 to the packet and send it again to Node B
-        // hdr_cmn *ch = HDR_CMN(p);   // Remove this line if not used
-
         datah->ts_[3] = NOW;          // Set ts_ to current time (t4)
-
         datah->ID() = 4;            // Update packet ID
-
         timer.initialTimer();       // Reset the timer
-
         num_equations++;
-
         Mac2PhyStartTx(p);          // Send the packet
-
         stateIdle();                // Transition to idle state
-
     } else {
         Packet::free(p);            // Drop the packet
         timer.initialTimer();       // Reset the timer
@@ -192,12 +168,9 @@ void UwDSync_A::stateRxTrigger(Packet *p)
     }
 }
 
-// void UwDSync_A::Phy2MacEndTx(const Packet* p){}
-
 void UwDSync_A::stateIdle(Packet *p)
 {
     // Idle state logic
-    // Assuming num_equations is a member variable of UwDSync_A
     if (p != nullptr) {
         hdr_DATA *datah = HDR_DATA(p); // Access hdr_DATA
         int pktid = datah->ID();       // Get packet ID
