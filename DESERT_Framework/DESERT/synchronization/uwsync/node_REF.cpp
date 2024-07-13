@@ -56,60 +56,25 @@ public:
 } class_module_uwsync_ref;
 
 UwSyncREF::UwSyncREF()
-    : MMac()
-    , pktid(0)
-    ,timer(this)  
+    : MMac(), pktid(10), start_time(0), stop_time(1001)
 {
     std::cout << "UwDSync_A constructor called" << std::endl;
     bind("start_time_", (double *)&start_time);
     bind("stop_time_", (double *)&stop_time);
 }
 
-
-
 UwSyncREF::~UwSyncREF(){};
 
-
-
-// start Methode
-void UwSyncREF::start() {
-    std::cout << "UwSyncREF start method called" << std::endl;
-    timer.initialTimer();
-}
-
-//stop Methode
-void UwSyncREF::stop() {
-    std::cout << "UwSyncREF stop method called" << std::endl;
-    timer.stop();
-}
-
-
-void UwSyncREF_Timer::initialTimer() {
-    // Check if the timer is not already running
-    if (*start_time == 0) {
-        // Schedule the timer for 10 minutes (600 seconds)
-        schedule(*stop_time);
-    } else {
-        std::cout << "Something wrong happened" << std::endl;
-    }
-}
-void UwSyncREF_Timer::expire(Event *e)
+void UwSyncREF::initPkt()
 {
-    if (module != nullptr) {  // Check if module is not null
-        module->stateTxData();  // Call the stateTxData method of the module
-    }
-}
 
-void UwSyncREF::initPkt(Packet *p)
-{
+    Packet *p = Packet::alloc();
+
     hdr_cmn *ch = HDR_CMN(p);
     hdr_SYNC *synch = HDR_SYNC(p);
 
-
-    synch->ts_[0] = NOW; // Set ts_ to current time
-    synch->ID() = 1;     // Initialize packet ID, if needed
-    MMac::Mac2PhyStartTx(p);
-
+    pktid = 0;
+    stateIdle(p);
 }
 
 void UwSyncREF::RxPacket(Packet *p)
@@ -119,7 +84,8 @@ void UwSyncREF::RxPacket(Packet *p)
 
     synch->ts_[3] = NOW;
     synch->ID() = 4;
-    MMac::Mac2PhyStartTx(p);
+
+    Transmitting(p);
     stateIdle(p);
 }
 
@@ -129,6 +95,11 @@ void UwSyncREF::stateIdle(Packet *p)
     hdr_SYNC *synch = HDR_SYNC(p);
     int pktid = synch->ID();
 
+    if (pktid == 0)
+    {
+        TransmittingToNodeREG(p);
+    }
+
     if (pktid == 3)
     {
 
@@ -136,6 +107,7 @@ void UwSyncREF::stateIdle(Packet *p)
     }
     else if (pktid == 4)
     {
+        TransmittingToNodeREG(p);
     }
     else
     {
@@ -143,17 +115,43 @@ void UwSyncREF::stateIdle(Packet *p)
         Packet::free(p); // Free the packet if it's not valid
     }
 }
+void UwSyncREF::TransmittingToNodeREG(Packet *p) 
+{
+    hdr_SYNC *synch = HDR_SYNC(p);
+    int pktid = synch->ID();
 
-void UwSyncREF::recv(Packet *p){
+    if (pktid == 0)
+    {
+        synch->ts_[0] = NOW; // Set ts_ to current time
+        synch->ID() = 1;
+        Transmitting(p);
+    }
+    else if (pktid == 4) // Changed to else if to avoid redundant checks
+    {
+        synch->ts_[3] = NOW; // Set ts_ to current time
+        synch->ID() = 4;
+
+        Transmitting(p);
+    }
+}
+
+
+void UwSyncREF::Transmitting(Packet *p) {
+    MMac::Mac2PhyStartTx(p);
+}
+
+void UwSyncREF::recv(Packet *p)
+{
     hdr_cmn *ch = HDR_CMN(p);
     hdr_SYNC *synch = HDR_SYNC(p);
     int pktid = synch->ID();
 
-    if (ch->direction()==hdr_cmn::UP){
+    if (ch->direction() == hdr_cmn::UP)
+    {
         stateIdle(p);
     }
-    if (ch->direction()==hdr_cmn::DOWN){
-
+    if (ch->direction() == hdr_cmn::DOWN)
+    {
+        stateIdle(p);
     }
-
 }

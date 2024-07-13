@@ -1,4 +1,3 @@
-//
 // Copyright (c) 2017 Regents of the SIGNET lab, University of Padova.
 // All rights reserved.
 //
@@ -36,6 +35,7 @@
  *
  *
  */
+
 #include <sync_header.h>
 #include "mmac.h"
 #include <iostream>
@@ -49,57 +49,21 @@
 
 class UwSyncREF : public MMac
 {
-friend class UwSyncREF_Timer;
 public:
 	UwSyncREF();
 	virtual ~UwSyncREF();
-	virtual void start();
-	virtual void stop();
 	virtual int command(int argc, const char *const *argv);
 	virtual int crLayCommand(ClMessage *m);
-	virtual void initPkt(Packet *p);
+	virtual void initPkt();
 	virtual void RxPacket(Packet *p);
+	virtual void TransmittingToNodeREG(Packet *p);
+	virtual void Transmitting(Packet *p);
 	virtual void stateIdle(Packet *p);
 	virtual void recv(Packet *p);
-
-	class UwSyncREF_Timer : public TimerHandler
-	{
-		
-	public:
-		UwSyncREF_Timer(UwSyncREF *m)
-			: TimerHandler(), left_duration(0), module(m)
-		{
-			assert(m != NULL);
-		}
-
-		virtual ~UwSyncREF_Timer() {}
-
-		virtual void initialTimer();
-
-		virtual void stop()
-		{
-			force_cancel();
-		}
-
-	 	virtual void schedule(double val)
-        {
-            if (module->start_time)
-            {
-                module->start_time = NOW;
-            }
-            left_duration = val;
-            resched(val);
-        }
-		virtual void expire(Event *e);
-
-	protected:
-		double left_duration;
-		UwSyncREF *module;
-	};
 
 private:
 	int pktid;
 	double start_time;
 	double stop_time;
-	UwSyncREF_Timer timer;
+
 };

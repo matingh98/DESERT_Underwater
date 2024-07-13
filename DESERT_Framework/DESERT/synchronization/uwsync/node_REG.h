@@ -49,6 +49,7 @@
 #include <fstream>
 #include <chrono>
 #include <random>
+#include <cassert> // Include assert for proper usage
 
 class UwSyncREG : public MMac
 {
@@ -60,13 +61,47 @@ public:
     virtual void StateRxPacket(Packet *p);
     virtual int command(int argc, const char *const *argv);
     virtual int crLayCommand(ClMessage *m);
-    virtual void TransmittingToNodeA(Packet *p);
+    virtual void TransmittingToNodeREF(Packet *p);
     virtual void stateIdle(Packet *p);
     virtual std::vector<double> sendReceivedTimestamp(Packet *p);
     virtual void recv(Packet *p);
+
+    class UwSyncREG_Timer : public TimerHandler
+    {
+    public:
+        UwSyncREG_Timer(UwSyncREG *m, Packet *pkt)
+            : TimerHandler(), left_duration(0), BT(m), packet(pkt)
+        {
+            assert(m != NULL);
+        }
+
+        virtual ~UwSyncREG_Timer() {}
+
+        virtual void stop()
+        {
+            force_cancel();
+        }
+
+        virtual void BackoffTimer()
+        {
+            left_duration = 10.0; // Set the backoff timer for 10 seconds
+            resched(left_duration); // Schedule the timer to expire after 10 seconds
+        }
+
+        virtual void expire(Event *e)
+        {
+            BT->TransmittingToNodeREF(packet); // Call TransmittingToNodeA with the packet
+        }
+
+    protected:
+        double left_duration;
+        UwSyncREG *BT;
+        Packet *packet; // Store the packet for later use
+    };
+
 protected:
     int pktid; /**< Packet ID */
     double receivedTimeStamp[4];
 };
 
-#endif
+#endif 

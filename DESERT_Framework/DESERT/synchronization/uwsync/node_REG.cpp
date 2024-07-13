@@ -79,28 +79,28 @@ int UwSyncREG::command(int argc, const char *const *argv) {
 }
 
 
-int UwDSync_B::crLayCommand(ClMessage *m) {
+int UwSyncREG::crLayCommand(ClMessage *m) {
     switch (m->type()) {
     default:
         return MMac::crLayCommand(m);
     }
 }
+
+
 void UwSyncREG::StateRxPacket(Packet *p)
 {
-
     hdr_SYNC *synch = HDR_SYNC(p);
     int pktid = synch->ID();
 
     if (pktid == 1)
     {
-        std::cout << "Packet ID 1 received from node Refrence" << std::endl;
+        std::cout << "Packet ID 1 received from node Reference" << std::endl;
 
         synch->ts_[1] = NOW;
         synch->ID() = 2;
-    }
-    else if (pktid == 4)
-    {
-        std::cout << "Packet ID 4 received from node A" << std::endl;
+
+        UwSyncREG_Timer *timer = new UwSyncREG_Timer(this, p);
+        timer->BackoffTimer(); // Start the backoff timer
     }
     else
     {
@@ -108,7 +108,8 @@ void UwSyncREG::StateRxPacket(Packet *p)
     }
 }
 
-void UwSyncREG::TransmittingToNodeA(Packet *p)
+
+void UwSyncREG::TransmittingToNodeREF(Packet *p)
 {
 
     hdr_SYNC *synch = HDR_SYNC(p);
@@ -137,7 +138,7 @@ void UwSyncREG::stateIdle(Packet *p)
         }
         else
         {
-            std::cerr << "Not a valid situation" << std::endl;
+            std::cout << "Not a valid situation" << std::endl;
             Packet::free(p);
         }
     }
@@ -161,9 +162,11 @@ void UwSyncREG::recv(Packet *p){
     int pktid = synch->ID();
 
     if (ch->direction()==hdr_cmn::UP){
-        stateIdle(p);
+    stateIdle(p);
     }
+
     if (ch->direction()==hdr_cmn::DOWN){
+    stateIdle(p);
 
     }
 
