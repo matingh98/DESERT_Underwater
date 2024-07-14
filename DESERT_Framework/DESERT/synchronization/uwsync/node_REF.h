@@ -52,7 +52,6 @@ class UwSyncREF : public MMac
 public:
 	UwSyncREF();
 	virtual ~UwSyncREF();
-	virtual int command(int argc, const char *const *argv);
 	virtual int crLayCommand(ClMessage *m);
 	virtual void initPkt();
 	virtual void RxPacket(Packet *p);
@@ -67,3 +66,4 @@ private:
 	double stop_time;
 
 };
+

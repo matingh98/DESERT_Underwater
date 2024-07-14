@@ -54,13 +54,12 @@ public:
     }
 } class_module_uwsync_reg;
 
-UwSyncREG::UwSyncREG() : MMac()
+UwSyncREG::UwSyncREG() : MMac(), lastPacket(nullptr)
 {
     std::cout << "UwSyncREG constructor called" << std::endl;
 }
 
 UwSyncREG::~UwSyncREG() {}
-
 
 
 
@@ -77,6 +76,8 @@ int UwSyncREG::command(int argc, const char *const *argv) {
 
     return MMac::command(argc, argv);
 }
+
+
 
 
 int UwSyncREG::crLayCommand(ClMessage *m) {
@@ -156,18 +157,22 @@ std::vector<double> UwSyncREG::sendReceivedTimestamp(Packet *p)
 }
 
 
-void UwSyncREG::recv(Packet *p){
+void UwSyncREG::recv(Packet *p) {
     hdr_cmn *ch = HDR_CMN(p);
     hdr_SYNC *synch = HDR_SYNC(p);
     int pktid = synch->ID();
 
-    if (ch->direction()==hdr_cmn::UP){
-    stateIdle(p);
+    if (ch->direction() == hdr_cmn::UP) {
+        stateIdle(p);
     }
 
-    if (ch->direction()==hdr_cmn::DOWN){
-    stateIdle(p);
-
+    if (ch->direction() == hdr_cmn::DOWN) {
+        stateIdle(p);
     }
 
+    // Store the packet pointer
+    lastPacket = p;
+
+    // Debugging output
+    std::cout << "Packet received with ID: " << pktid << std::endl;
 }

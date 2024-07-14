@@ -10,20 +10,20 @@
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
-# 3. Neither the name of the University of Padova (SIGNET lab) nor the 
-#    names of its contributors may be used to endorse or promote products 
+# 3. Neither the name of the University of Padova (SIGNET lab) nor the
+#    names of its contributors may be used to endorse or promote products
 #    derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED 
-# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
-# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # This script is used to test UW-TDMA protocol
@@ -32,8 +32,8 @@
 #
 # N.B.: UnderwaterChannel and UW/PHYSICAL are used for PHY layer and channel
 #
-# Authors: Filippo Campagnaro <campagn1@dei.unipd.it>
-#          Roberto francescon <frances1@dei.unipd.it>
+# Authors: Matin Ghalkhani
+#
 # Version: 1.0.0
 #
 # NOTE: tcl sample tested on Ubuntu 11.10, 64/32 bits OS
@@ -54,7 +54,7 @@
 #   +-------------------------+
 #   |  1. UW/PHYSICAL         |
 #   +-------------------------+
-#           |         |    
+#           |         |
 #   +-------------------------+
 #   |   UnderwaterChannel     |
 #   +-------------------------+
@@ -69,7 +69,7 @@ set opt(bash_parameters) 	0
 # Library Loading   #
 #####################
 load libMiracle.so
-load libMiracleWirelessCh.so 
+load libMiracleWirelessCh.so
 load libMiracleBasicMovement.so
 load libuwip.so
 load libuwstaticrouting.so
@@ -100,12 +100,11 @@ $ns use-Miracle
 ##################
 set opt(start_clock)       [clock seconds]
 set opt(nn)                 2 ;# Number of Nodes
-set opt(starttime)          1	
+set opt(starttime)          1
 set opt(stoptime)           1001
-set opt(pktsize)	       125    ;# Packet size in bytes
-set opt(dist_nodes) 	   1000.0    ;# Distance between nodes in m
+
 set opt(txduration)        [expr $opt(stoptime) - $opt(starttime)]
-set opt(txpower)	    	150.0 
+set opt(txpower)	    	150.0
 set opt(maxinterval_)       200
 
 set opt(freq) 			      150000.0
@@ -116,30 +115,30 @@ set opt(T_backoff)	 	0
 set opt(N_density)	 	5
 
 if {$opt(bash_parameters)} {
-	if {$argc != 3} {
-		puts "The script requires three inputs:"
-		puts "- the first for the seed"
-		puts "- the second one is for the Poisson CBR period"
-		puts "- the third one is the cbr packet size (byte);"
-		puts "example: ns TDMA_exp.tcl 1 60 125"
-		puts "If you want to leave the default values, please set to 0"
-		puts "the value opt(bash_parameters) in the tcl script"
-		puts "Please try again."
-		return
-	} else {
-		set opt(rngstream)    [lindex $argv 0]
-		set opt(pktsize)    [lindex $argv 2]
-	}
+    if {$argc != 3} {
+        puts "The script requires three inputs:"
+        puts "- the first for the seed"
+        puts "- the second one is for the Poisson CBR period"
+        puts "- the third one is the cbr packet size (byte);"
+        puts "example: ns TDMA_exp.tcl 1 60 125"
+        puts "If you want to leave the default values, please set to 0"
+        puts "the value opt(bash_parameters) in the tcl script"
+        puts "Please try again."
+        return
+    } else {
+        set opt(rngstream)    [lindex $argv 0]
+        set opt(pktsize)    [lindex $argv 2]
+    }
 }
 
 global defaultRNG
 for {set k 0} {$k < $opt(rngstream)} {incr k} {
-	$defaultRNG next-substream
+    $defaultRNG next-substream
 }
 
 
-set opt(tracefilename) "./test_uwdsync.tr"
-	set opt(tracefile) [open $opt(tracefilename) w]
+set opt(tracefilename) "./test_uwsync.tr"
+set opt(tracefile) [open $opt(tracefilename) w]
 
 
 #########################
@@ -157,7 +156,7 @@ set propagation [new MPropagation/Underwater]
 
 
 Module/UW/PHYSICAL  set BitRate_                   $opt(bitrate)
-Module/UW/PHYSICAL  set AcquisitionThreshold_dB_   10.0 
+Module/UW/PHYSICAL  set AcquisitionThreshold_dB_   10.0
 Module/UW/PHYSICAL  set MaxTxSPL_dB_               156
 Module/UW/PHYSICAL  set MinTxSPL_dB_               10
 Module/UW/PHYSICAL  set MaxTxRange_                50000
@@ -180,23 +179,30 @@ set pos_y(2) 20.0
 
 
 
-
+Module/UW/SYNC/REF set start_time_ $opt(starttime)
+Module/UW/SYNC/REF set stop_time_ $opt(stoptime)
 
 ################################
 # Procedure(s) to create nodes #
 ################################
 
 proc createNode { id } {
-    
+
     global channel propagation data_mask ns cbr position node udp portnum ipr ipif channel_estimator
     global phy_data posdb opt rvposx rvposy rvposz mhrouting mll mac woss_utilities woss_creator db_manager
     global row pos_x pos_y sync
-    
+
     set node($id) [$ns create-M_Node $opt(tracefile)]
     Module/UW/PHYSICAL  set debug_ 0
 
-    set sync($id) [new Module/UW/SYNC/REF]
-
+    # Check the value of id and set sync array accordingly
+    if {$id == 1} {
+        set sync($id) [new Module/UW/SYNC/REF]
+    } elseif {$id == 2} {
+        set sync($id) [new Module/UW/SYNC/REG]
+    } else {
+        puts "Invalid id: $id"
+    }
 
     puts "SYNC id [$sync($id) Id_]"
 
@@ -212,25 +218,25 @@ proc createNode { id } {
 
     set position($id) [new "Position/BM"]
     $node($id) addPosition $position($id)
-    
+
     #Setup positions
     $position($id) setX_ $pos_x($id)
     $position($id) setY_ $pos_y($id)
     $position($id) setZ_ -100
 
-    
-    
+
+
     set interf_data($id) [new "Module/UW/INTERFERENCE"]
     $interf_data($id) set maxinterval_ $opt(maxinterval_)
     $interf_data($id) set debug_       0
 
 
-    
+
     $phy_data($id) setSpectralMask $data_mask
     $phy_data($id) setInterference $interf_data($id)
     $phy_data($id) setPropagation $propagation
     $phy_data($id) set debug_ 0
-	$phy_data($id) setInterferenceModel "MEANPOWER"
+    $phy_data($id) setInterferenceModel "MEANPOWER"
 
 
 }
@@ -249,8 +255,8 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
 #####################
 # # Set here the timers to start and/or stop modules (optional)
 # for {set ii 1} {$ii < $opt(nn)} {incr ii} {
-#     $ns at $opt(starttime) "$dsync2($ii) start"
-#     $ns at $opt(stoptime) "$dsync2($ii) stop"
+#     $ns at $opt(starttime) "$sync2($ii) start"
+#     $ns at $opt(stoptime) "$sync2($ii) stop"
 # }
 
 ###################
@@ -261,26 +267,42 @@ proc finish {} {
     global ns opt outfile
     global phy_data channel propagation
     global phy
+    global sync
 
-    
+
+    #     if {$opt(verbose)} {
+    #        puts "-----------------------------------------------------------------"
+    #        puts "Simulation summary"
+    #        puts "-----------------------------------------------------------------"
+    #        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
+    #        puts "Number of nodes          : $opt(nn)"
+    #        if {[info exists sync(2)]} {
+    #            puts "Received Time            : [$sync(2) get_timestamp]"
+    #        }
+    #        puts "-----------------------------------------------------------------"
+    #     }
+
+    # }
+if {$opt(verbose)} {
+    puts "-----------------------------------------------------------------"
+    puts "Simulation summary"
+    puts "-----------------------------------------------------------------"
+    puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
+    puts "Number of nodes          : $opt(nn)"
+    if {[info exists sync(2)]} {
+       puts "Received Time            : [$sync(2) get_timestamp]"}
+    puts "-----------------------------------------------------------------"
+}
+
+
+    ###################
+    # start simulation
+    ###################
     if {$opt(verbose)} {
-       puts "-----------------------------------------------------------------"
-       puts "Simulation summary"
-       puts "-----------------------------------------------------------------"
-       puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
-       puts "Number of nodes          : $opt(nn)"
-       puts "-----------------------------------------------------------------"
+        puts "\nStarting Simulation\n"
     }
 
-}
-###################
-# start simulation
-###################
-if {$opt(verbose)} {
-    puts "\nStarting Simulation\n"
-}
+    $ns at [expr $opt(stoptime) + 50.0] "finish; $ns halt"
 
-$ns at [expr $opt(stoptime) + 50.0] "finish; $ns halt" 
-
-$ns run
+    $ns run
 

@@ -99,9 +99,10 @@ public:
         Packet *packet; // Store the packet for later use
     };
 
-protected:
+private:
     int pktid; /**< Packet ID */
     double receivedTimeStamp[4];
+    Packet *lastPacket;
 };
 
 #endif 
