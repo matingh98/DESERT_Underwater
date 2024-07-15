@@ -53,17 +53,23 @@ public:
 	UwSyncREF();
 	virtual ~UwSyncREF();
 	virtual int crLayCommand(ClMessage *m);
+	virtual int command(int argc, const char *const *argv);
 	virtual void initPkt();
 	virtual void RxPacket(Packet *p);
 	virtual void TransmittingToNodeREG(Packet *p);
 	virtual void Transmitting(Packet *p);
 	virtual void stateIdle(Packet *p);
 	virtual void recv(Packet *p);
+	inline int get_timestamp_ts1()
+	{
+		std::cout << "Object address in get_timestamp_ts1: " << this << std::endl;
+		return ts_[0];
+	}
 
 private:
-	int pktid;
-	double start_time;
-	double stop_time;
-
+    int pktid;
+    double start_time;
+    double stop_time;
+    double ts_[4];
+    Packet* stored_packet;  // Add this line
 };
-

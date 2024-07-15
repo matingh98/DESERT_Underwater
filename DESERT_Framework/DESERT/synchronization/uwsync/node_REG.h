@@ -53,7 +53,7 @@
 
 class UwSyncREG : public MMac
 {
-    friend class UwSyncREG_Timer;
+    // friend class UwSyncREG_Timer;
 
 public:
     UwSyncREG();
@@ -102,7 +102,6 @@ public:
 private:
     int pktid; /**< Packet ID */
     double receivedTimeStamp[4];
-    Packet *lastPacket;
 };
 
 #endif 

@@ -200,8 +200,6 @@ proc createNode { id } {
         set sync($id) [new Module/UW/SYNC/REF]
     } elseif {$id == 2} {
         set sync($id) [new Module/UW/SYNC/REG]
-    } else {
-        puts "Invalid id: $id"
     }
 
     puts "SYNC id [$sync($id) Id_]"
@@ -250,6 +248,9 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
     createNode $id
     puts "Node $id fully initialized"
 }
+
+
+$sync(1) transmit
 #####################
 # Start/Stop Timers #
 #####################
@@ -262,38 +263,26 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
 ###################
 # Final Procedure #
 ###################
-# Define here the procedure to call at the end of the simulation
 proc finish {} {
     global ns opt outfile
     global phy_data channel propagation
     global phy
     global sync
 
+    if {$opt(verbose)} {
+        puts "-----------------------------------------------------------------"
+        puts "Simulation summary"
+        puts "-----------------------------------------------------------------"
+        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
+        puts "Number of nodes          : $opt(nn)"
+        if {[info exists sync(2)]} {
+            puts "Received Time            : [$sync(2) get_timestamp]"}
 
-    #     if {$opt(verbose)} {
-    #        puts "-----------------------------------------------------------------"
-    #        puts "Simulation summary"
-    #        puts "-----------------------------------------------------------------"
-    #        puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
-    #        puts "Number of nodes          : $opt(nn)"
-    #        if {[info exists sync(2)]} {
-    #            puts "Received Time            : [$sync(2) get_timestamp]"
-    #        }
-    #        puts "-----------------------------------------------------------------"
-    #     }
-
-    # }
-if {$opt(verbose)} {
-    puts "-----------------------------------------------------------------"
-    puts "Simulation summary"
-    puts "-----------------------------------------------------------------"
-    puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
-    puts "Number of nodes          : $opt(nn)"
-    if {[info exists sync(2)]} {
-       puts "Received Time            : [$sync(2) get_timestamp]"}
-    puts "-----------------------------------------------------------------"
-}
-
+        if {[info exists sync(1)]} {
+            puts "Received Time            : [$sync(1) get_timestamp_ts1]"}
+            puts "-----------------------------------------------------------------"
+        }
+    }
 
     ###################
     # start simulation

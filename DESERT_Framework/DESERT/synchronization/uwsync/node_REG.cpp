@@ -54,39 +54,38 @@ public:
     }
 } class_module_uwsync_reg;
 
-UwSyncREG::UwSyncREG() : MMac(), lastPacket(nullptr)
+UwSyncREG::UwSyncREG() : MMac()
 {
     std::cout << "UwSyncREG constructor called" << std::endl;
 }
 
 UwSyncREG::~UwSyncREG() {}
 
-
-
-int UwSyncREG::command(int argc, const char *const *argv) {
+int UwSyncREG::command(int argc, const char *const *argv)
+{
     Tcl &tcl = Tcl::instance();
-   if (strcasecmp(argv[1], "get_timestamp") == 0) {
-            std::stringstream ss;
-            for (int i = 0; i < 4; i++) {
-                ss << receivedTimeStamp[i] << " ";
-            }
-            tcl.resultf("%s", ss.str().c_str());
-            return TCL_OK;
+    if (strcasecmp(argv[1], "get_timestamp") == 0)
+    {
+        std::stringstream ss;
+        for (int i = 0; i < 4; i++)
+        {
+            ss << receivedTimeStamp[i] << " ";
         }
+        tcl.resultf("%s", ss.str().c_str());
+        return TCL_OK;
+    }
 
     return MMac::command(argc, argv);
 }
 
-
-
-
-int UwSyncREG::crLayCommand(ClMessage *m) {
-    switch (m->type()) {
+int UwSyncREG::crLayCommand(ClMessage *m)
+{
+    switch (m->type())
+    {
     default:
         return MMac::crLayCommand(m);
     }
 }
-
 
 void UwSyncREG::StateRxPacket(Packet *p)
 {
@@ -101,7 +100,9 @@ void UwSyncREG::StateRxPacket(Packet *p)
         synch->ID() = 2;
 
         UwSyncREG_Timer *timer = new UwSyncREG_Timer(this, p);
-        timer->BackoffTimer(); // Start the backoff timer
+        timer->BackoffTimer(); 
+
+        TransmittingToNodeREF(p);
     }
     else
     {
@@ -109,11 +110,11 @@ void UwSyncREG::StateRxPacket(Packet *p)
     }
 }
 
-
 void UwSyncREG::TransmittingToNodeREF(Packet *p)
 {
 
     hdr_SYNC *synch = HDR_SYNC(p);
+    int pktid = synch->ID();
 
     synch->ts_[2] = NOW;
     synch->ID() = 3;
@@ -156,23 +157,25 @@ std::vector<double> UwSyncREG::sendReceivedTimestamp(Packet *p)
     return std::vector<double>(receivedTimeStamp, receivedTimeStamp + 4);
 }
 
+void UwSyncREG::recv(Packet *p)
+{
 
-void UwSyncREG::recv(Packet *p) {
-    hdr_cmn *ch = HDR_CMN(p);
-    hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
+    if (pktid == 1)
+    {
+        hdr_cmn *ch = HDR_CMN(p);
+        hdr_SYNC *synch = HDR_SYNC(p);
+        int pktid = synch->ID();
 
-    if (ch->direction() == hdr_cmn::UP) {
-        stateIdle(p);
+        if (ch->direction() == hdr_cmn::UP)
+        {
+            stateIdle(p);
+        }
+
+        if (ch->direction() == hdr_cmn::DOWN)
+        {
+            stateIdle(p);
+        }
+
+        std::cout << "Packet received with ID: " << pktid << std::endl;
     }
-
-    if (ch->direction() == hdr_cmn::DOWN) {
-        stateIdle(p);
-    }
-
-    // Store the packet pointer
-    lastPacket = p;
-
-    // Debugging output
-    std::cout << "Packet received with ID: " << pktid << std::endl;
 }
