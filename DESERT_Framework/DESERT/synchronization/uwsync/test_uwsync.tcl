@@ -1,5 +1,4 @@
-#
-# Copyright (c) 2015 Regents of the SIGNET lab, University of Padova.
+## Copyright (c) 2015 Regents of the SIGNET lab, University of Padova.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,38 +25,25 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# This script is used to test UW-TDMA protocol
-# with a CBR (Constant Bit Rate) Application Module
+# This script is used to test UW-SYNC protocol
 # Here the complete stack used for each node in the simulation
 #
-# N.B.: UnderwaterChannel and UW/PHYSICAL are used for PHY layer and channel
+# N.B.: UnderwaterChannel and UW/SYNC are used for doing Time Synchronization between two nodes
 #
 # Authors: Matin Ghalkhani
 #
 # Version: 1.0.0
 #
-# NOTE: tcl sample tested on Ubuntu 11.10, 64/32 bits OS
-#
 # Stack of the nodes
-#   +-------------------------+
-#   |  7. UW/CBR              |
-#   +-------------------------+
-#   |  6. UW/UDP              |
-#   +-------------------------+
-#   |  5. UW/STATICROUTING    |
-#   +-------------------------+
-#   |  4. UW/IP               |
-#   +-------------------------+
-#   |  3. UW/MLL              |
-#   +-------------------------+
-#   |  2. UW/TDMA             |
-#   +-------------------------+
-#   |  1. UW/PHYSICAL         |
-#   +-------------------------+
-#           |         |
-#   +-------------------------+
-#   |   UnderwaterChannel     |
-#   +-------------------------+
+#
+#    NODE REF (Reference)                  NODE REG (Regular)
+# +-----------------------+            +-----------------------+
+# |      UW/SYNC          |            |      UW/SYNC          |
+# +-----------------------+            +-----------------------+
+#         |                                |
+# +-----------------------------------------------------------+
+# |                  UnderwaterChannel                        |
+# +-----------------------------------------------------------+
 ######################################
 # Flags to enable or disable options #
 ######################################
@@ -103,32 +89,22 @@ set opt(nn)                 2 ;# Number of Nodes
 set opt(starttime)          1
 set opt(stoptime)           1001
 
-set opt(txduration)        [expr $opt(stoptime) - $opt(starttime)]
-set opt(txpower)	    	150.0
+set opt(txduration)         [expr $opt(stoptime) - $opt(starttime)]
+set opt(txpower)	    	140.0
 set opt(maxinterval_)       200
 
-set opt(freq) 			      150000.0
-set opt(bw)              	60000.0
-set opt(bitrate)	 	      1000.0
+set opt(freq) 			    26000.0
+set opt(bw)              	16000.0
+set opt(bitrate)	 	    3000.0
 set opt(rngstream)          1
-set opt(T_backoff)	 	0
-set opt(N_density)	 	5
+set opt(T_backoff)	 	    0
+set opt(N_density)	     	5
 
 if {$opt(bash_parameters)} {
-    if {$argc != 3} {
-        puts "The script requires three inputs:"
-        puts "- the first for the seed"
-        puts "- the second one is for the Poisson CBR period"
-        puts "- the third one is the cbr packet size (byte);"
-        puts "example: ns TDMA_exp.tcl 1 60 125"
-        puts "If you want to leave the default values, please set to 0"
-        puts "the value opt(bash_parameters) in the tcl script"
-        puts "Please try again."
-        return
-    } else {
-        set opt(rngstream)    [lindex $argv 0]
-        set opt(pktsize)    [lindex $argv 2]
-    }
+
+    set opt(rngstream)  [lindex $argv 0]
+    set opt(pktsize)    [lindex $argv 2]
+
 }
 
 global defaultRNG
@@ -173,8 +149,8 @@ $data_mask setPropagationSpeed  1500
 set pos_x(1) 0.0
 set pos_y(1) 0.0
 
-set pos_x(2) 20.0
-set pos_y(2) 20.0
+set pos_x(2) 1000.0
+set pos_y(2) 1000.0
 
 
 
@@ -250,14 +226,15 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
 }
 
 
-$sync(1) transmit
+$ns at 20 "$sync(1) transmit"
+
 #####################
 # Start/Stop Timers #
 #####################
 # # Set here the timers to start and/or stop modules (optional)
 # for {set ii 1} {$ii < $opt(nn)} {incr ii} {
-#     $ns at $opt(starttime) "$sync2($ii) start"
-#     $ns at $opt(stoptime) "$sync2($ii) stop"
+#     $ns at $opt(starttime) "$sync($ii) start"
+#     $ns at $opt(stoptime) "$sync($ii) stop"
 # }
 
 ###################
@@ -278,8 +255,6 @@ proc finish {} {
         if {[info exists sync(2)]} {
             puts "Received Time            : [$sync(2) get_timestamp]"}
 
-        if {[info exists sync(1)]} {
-            puts "Received Time            : [$sync(1) get_timestamp_ts1]"}
             puts "-----------------------------------------------------------------"
         }
     }

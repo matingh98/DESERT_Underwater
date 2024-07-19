@@ -67,9 +67,8 @@ public:
 	}
 
 private:
-    int pktid;
+    int pktid_;
     double start_time;
     double stop_time;
     double ts_[4];
-    Packet* stored_packet;  // Add this line
 };

@@ -34,6 +34,8 @@
  * \brief Provides the initialization of the uwpolling libraries
  *
  */
+
+
 #include <tclcl.h>	
 #include <node_REF.h>
 #include <node_REG.h>
@@ -59,13 +61,13 @@ public:
     }
 } class_hdr_SYNC;
 
-extern EmbeddedTcl UwSyncREFTclCode;
+extern EmbeddedTcl uwsync_default;
 
 extern "C" int 
 Uwsync_Init()
 {
-
-    UwSyncREFTclCode.load();
+    PT_SYNC = p_info::addPacket("UWSYNC/SYNC");
+    uwsync_default.load();
     return 0;
 }
 

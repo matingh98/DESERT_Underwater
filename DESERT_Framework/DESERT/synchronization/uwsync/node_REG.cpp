@@ -54,7 +54,7 @@ public:
     }
 } class_module_uwsync_reg;
 
-UwSyncREG::UwSyncREG() : MMac()
+UwSyncREG::UwSyncREG() : MMac(), alpha(0), beta(0)
 {
     std::cout << "UwSyncREG constructor called" << std::endl;
 }
@@ -87,22 +87,37 @@ int UwSyncREG::crLayCommand(ClMessage *m)
     }
 }
 
+
+void UwSyncREG::generateClockSkewAndOffset()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis_alpha(1 - 100e-6, 1 + 100e-6);
+    std::uniform_real_distribution<> dis_beta(-5.0, 5.0);
+    alpha = dis_alpha(gen);
+    beta = dis_beta(gen);
+    std::cout << "Generated clock skew (alpha): " << alpha << ", clock offset (beta): " << beta << std::endl;
+
+}
+
+
 void UwSyncREG::StateRxPacket(Packet *p)
 {
     hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
+    int pktid_ = synch->ID();
 
-    if (pktid == 1)
+    if (pktid_ == 1)
     {
         std::cout << "Packet ID 1 received from node Reference" << std::endl;
 
-        synch->ts_[1] = NOW;
+        // Generate clock skew and offset once
+        generateClockSkewAndOffset();
+
+        synch->ts_[1] = (NOW * alpha) + beta;
         synch->ID() = 2;
 
         UwSyncREG_Timer *timer = new UwSyncREG_Timer(this, p);
-        timer->BackoffTimer(); 
-
-        TransmittingToNodeREF(p);
+        timer->BackoffTimer();
     }
     else
     {
@@ -110,31 +125,31 @@ void UwSyncREG::StateRxPacket(Packet *p)
     }
 }
 
+
 void UwSyncREG::TransmittingToNodeREF(Packet *p)
 {
-
     hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
+    int pktid_ = synch->ID();
 
-    synch->ts_[2] = NOW;
+    synch->ts_[2] = (NOW * alpha) + beta;
     synch->ID() = 3;
 
     MMac::Mac2PhyStartTx(p);
-    stateIdle(p);
 }
+
 
 void UwSyncREG::stateIdle(Packet *p)
 {
     if (p != nullptr)
     {
         hdr_SYNC *synch = HDR_SYNC(p);
-        int pktid = synch->ID();
+        int pktid_ = synch->ID();
 
-        if (pktid == 1)
+        if (pktid_ == 1)
         {
             StateRxPacket(p);
         }
-        else if (pktid == 4)
+        else if (pktid_ == 4)
         {
             sendReceivedTimestamp(p);
         }
@@ -148,7 +163,6 @@ void UwSyncREG::stateIdle(Packet *p)
 
 std::vector<double> UwSyncREG::sendReceivedTimestamp(Packet *p)
 {
-    std::cout << "Sending received timestamps" << std::endl;
     hdr_SYNC *synch = HDR_SYNC(p);
     for (int i = 0; i < 4; i++)
     {
@@ -159,23 +173,27 @@ std::vector<double> UwSyncREG::sendReceivedTimestamp(Packet *p)
 
 void UwSyncREG::recv(Packet *p)
 {
-
-    if (pktid == 1)
+    hdr_cmn *ch = hdr_cmn::access(p);
+    hdr_SYNC *synch = HDR_SYNC(p);
+    std::cout << "recieved ID: " << synch->ID() << std::endl;
+    std::cout << "Packet on reception: ";
+    for (int i = 0; i < sizeof(hdr_SYNC); ++i)
     {
-        hdr_cmn *ch = HDR_CMN(p);
-        hdr_SYNC *synch = HDR_SYNC(p);
-        int pktid = synch->ID();
-
-        if (ch->direction() == hdr_cmn::UP)
+        std::cout << std::hex << (int)((unsigned char *)synch)[i] << " ";
+    }
+    std::cout << std::dec << std::endl;
+    if (synch->ID() == 1 || synch->ID() == 4)
+    {
+        if (ch->direction() == hdr_cmn::UP || ch->direction() == hdr_cmn::DOWN)
         {
+            std::cout << "Received from Node REF ";
+
             stateIdle(p);
         }
-
-        if (ch->direction() == hdr_cmn::DOWN)
-        {
-            stateIdle(p);
-        }
-
-        std::cout << "Packet received with ID: " << pktid << std::endl;
+    }
+    else
+    {
+        Packet::free(p);
+        stateIdle(p);
     }
 }

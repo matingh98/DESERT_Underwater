@@ -54,7 +54,7 @@ public:
         return (new UwSyncREF());
     }
 } class_module_uwsync_ref;
-UwSyncREF::UwSyncREF() : MMac(), pktid(0), start_time(0), stop_time(1001)
+UwSyncREF::UwSyncREF() : MMac(), pktid_(0), start_time(0), stop_time(1001)
 {
     std::cout << "UwDSync_A constructor called" << std::endl;
     bind("start_time_", (double *)&start_time);
@@ -73,17 +73,10 @@ int UwSyncREF::crLayCommand(ClMessage *m)
     }
 }
 
-
-
 int UwSyncREF::command(int argc, const char *const *argv)
 {
     Tcl &tcl = Tcl::instance();
-    std::cout << "Command method called. Object address: " << this << std::endl; // Print object address
-
-    if (strcasecmp(argv[1], "get_timestamp_ts1") == 0) {
-			tcl.resultf("%d", get_timestamp_ts1());
-			return TCL_OK;}
-    else if (strcasecmp(argv[1], "transmit") == 0)
+    if (strcasecmp(argv[1], "transmit") == 0)
     {
         initPkt();
         return TCL_OK;
@@ -95,107 +88,85 @@ int UwSyncREF::command(int argc, const char *const *argv)
 void UwSyncREF::initPkt()
 {
     Packet *p = Packet::alloc();
-
-    if (p == nullptr) {
-        std::cerr << "Packet allocation failed" << std::endl;
-        return;
-    }
-
     hdr_cmn *ch = hdr_cmn::access(p);
-    if (ch == nullptr) {
-        std::cerr << "Failed to access common header" << std::endl;
-        Packet::free(p);
-        return;
-    }
-
     hdr_SYNC *synch = HDR_SYNC(p);
-    if (synch == nullptr) {
-        std::cerr << "Failed to access SYNC header" << std::endl;
-        Packet::free(p);
-        return;
-    }
 
-    synch->ID() = pktid;
-    std::cout << "Packet initialized with pktid: " << synch->ID() << std::endl;
-
-    // Ensure size is set correctly
+    synch->ID() = pktid_;
+    std::cout << "Initializing packet with ID: " << synch->ID() << std::endl;
     ch->size() = sizeof(hdr_SYNC);
-
-    std::cout << "Packet size set to: " << ch->size() << std::endl;
     stateIdle(p);
 }
 
-
-
-void UwSyncREF::RxPacket(Packet *p)
-{
-    hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
-
-    synch->ts_[3] = NOW;
-    synch->ID() = 4;
-
-    Transmitting(p);
-    stateIdle(p);
-}
 
 void UwSyncREF::stateIdle(Packet *p)
 {
     hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
+    int pktid_ = synch->ID();
 
-    std::cout << "Entering stateIdle with pktid: " << pktid << std::endl;
+    std::cout << "Entering stateIdle with pktid: " << pktid_ << std::endl;
 
-    if (pktid == 0)
+    if (pktid_ == 0)
     {
         std::cout << "Calling TransmittingToNodeREG for pktid 0" << std::endl;
         TransmittingToNodeREG(p);
     }
-    else if (pktid == 3)
+    else if (pktid_ == 3)
     {
         std::cout << "Calling RxPacket for pktid 3" << std::endl;
         RxPacket(p);
     }
-    else if (pktid == 4)
+    else if (pktid_ == 4)
     {
         std::cout << "Calling TransmittingToNodeREG for pktid 4" << std::endl;
         TransmittingToNodeREG(p);
     }
     else
     {
-        std::cout << "Not a valid situation, pktid: " << pktid << std::endl;
+        std::cout << "Not a valid situation, pktid: " << pktid_ << std::endl;
         Packet::free(p);
     }
+}
+
+
+void UwSyncREF::RxPacket(Packet *p)
+{
+    hdr_SYNC *synch = HDR_SYNC(p);
+    int pktid_ = synch->ID();
+
+    synch->ts_[3] = NOW;
+    synch->ID() = 4;
+
+    Transmitting(p);
 }
 
 void UwSyncREF::TransmittingToNodeREG(Packet *p)
 {
     hdr_SYNC *synch = HDR_SYNC(p);
-    int pktid = synch->ID();
-    std::cout << "TransmittingToNodeREG called with pktid: " << pktid << std::endl;
-    std::cout << "Object address in TransmittingToNodeREG: " << this << std::endl;
-
-    if (pktid == 0)
+    std::cout << "Before transmit packet ID: " << synch->ID() << std::endl;
+    if (synch->ID() == 0)
     {
-        synch->ts_[0] = 11;
+        synch->ts_[0] = NOW;
         synch->ID() = 1;
-        ts_[0] = 11;  // Also update the object's ts_
-        std::cout << "ts_[0] set to " << synch->ts_[0] << " and pktid set to " << synch->ID() << std::endl;
+        ts_[0] = synch->ts_[0];
     }
-    else if (pktid == 4)
+    else if (synch->ID() == 4)
     {
-        synch->ts_[3] = NOW;
-        synch->ID() = 4;
-        std::cout << "ts_[3] set to NOW, pktid set to 4" << std::endl;
     }
+    std::cout << "After packet ID: " << synch->ID() << std::endl;
+    std::cout << "Packet before transmission: ";
+    for (std::size_t i = 0; i < sizeof(hdr_SYNC); ++i)
+    {
+        std::cout << std::hex << (int)((unsigned char *)synch)[i] << " ";
+    }
+    std::cout << std::dec << std::endl;
     Transmitting(p);
 }
-
 
 void UwSyncREF::Transmitting(Packet *p)
 {
     hdr_cmn *ch = hdr_cmn::access(p);
-    if (ch == nullptr) {
+    if (ch == nullptr)
+    {
         std::cerr << "Failed to access common header in Transmitting" << std::endl;
         Packet::free(p);
         return;
@@ -207,40 +178,30 @@ void UwSyncREF::Transmitting(Packet *p)
 
 void UwSyncREF::recv(Packet *p)
 {
-    std::cout << "Receiving packet" << std::endl;
-
     hdr_cmn *ch = hdr_cmn::access(p);
-    if (ch == nullptr) {
-        std::cerr << "Failed to access common header" << std::endl;
-        return;
-    }
-
     hdr_SYNC *synch = HDR_SYNC(p);
-    if (synch == nullptr) {
-        std::cerr << "Failed to access SYNC header" << std::endl;
-        return;
-    }
-
-    int pktid = synch->ID();
-    std::cout << "Packet received with direction: " << ch->direction() << " and pktid: " << pktid << std::endl;
-    std::cout << "Current ts_[0] in recv: " << synch->ts_[0] << std::endl;
-
-    if (pktid == 10)
+    std::cout << "Receiving ID: " << synch->ID() << std::endl;
+    std::cout << "Packet on reception: ";
+    for (std::size_t i = 0; i < sizeof(hdr_SYNC); ++i)
     {
-        std::cout << "pktid is 10, initializing packet" << std::endl;
+        std::cout << std::hex << (int)((unsigned char *)synch)[i] << " ";
+    }
+    std::cout << std::dec << std::endl;
+    if (synch->ID() == 0)
+    {
+        Packet::free(p);
         initPkt();
     }
     else
     {
-        if (ch->direction() == hdr_cmn::UP)
+         if (synch->ID() == 3)
+    {
+        if (ch->direction() == hdr_cmn::UP || ch->direction() == hdr_cmn::DOWN)
         {
-            std::cout << "Packet direction is UP, calling stateIdle" << std::endl;
+            std::cout << "Received from Node REG ";
+
             stateIdle(p);
         }
-        else if (ch->direction() == hdr_cmn::DOWN)
-        {
-            std::cout << "Packet direction is DOWN, calling stateIdle" << std::endl;
-            stateIdle(p);
-        }
+    }
     }
 }

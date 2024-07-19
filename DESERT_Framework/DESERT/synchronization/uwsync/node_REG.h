@@ -49,6 +49,7 @@
 #include <fstream>
 #include <chrono>
 #include <random>
+#include <vector>
 #include <cassert> // Include assert for proper usage
 
 class UwSyncREG : public MMac
@@ -63,8 +64,9 @@ public:
     virtual int crLayCommand(ClMessage *m);
     virtual void TransmittingToNodeREF(Packet *p);
     virtual void stateIdle(Packet *p);
-    virtual std::vector<double> sendReceivedTimestamp(Packet *p);
     virtual void recv(Packet *p);
+    virtual void generateClockSkewAndOffset();
+    virtual std::vector<double> sendReceivedTimestamp(Packet *p);
 
     class UwSyncREG_Timer : public TimerHandler
     {
@@ -84,7 +86,7 @@ public:
 
         virtual void BackoffTimer()
         {
-            left_duration = 10.0; // Set the backoff timer for 10 seconds
+            left_duration = 10.0;   // Set the backoff timer for 10 seconds
             resched(left_duration); // Schedule the timer to expire after 10 seconds
         }
 
@@ -100,8 +102,10 @@ public:
     };
 
 private:
-    int pktid; /**< Packet ID */
+    int pktid_; /**< Packet ID */
     double receivedTimeStamp[4];
+    double alpha; // Clock skew
+    double beta;  // Clock offset
 };
 
-#endif 
+#endif
