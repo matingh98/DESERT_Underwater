@@ -54,7 +54,7 @@ public:
     }
 } class_module_uwsync_reg;
 
-UwSyncREG::UwSyncREG() : MMac(), alpha(0), beta(0)
+UwSyncREG::UwSyncREG() : MMac(), alpha(0), beta(0), soundspeed(1500),avaragespeed(1)
 {
     std::cout << "UwSyncREG constructor called" << std::endl;
 }
@@ -87,7 +87,6 @@ int UwSyncREG::crLayCommand(ClMessage *m)
     }
 }
 
-
 void UwSyncREG::generateClockSkewAndOffset()
 {
     std::random_device rd;
@@ -97,9 +96,7 @@ void UwSyncREG::generateClockSkewAndOffset()
     alpha = dis_alpha(gen);
     beta = dis_beta(gen);
     std::cout << "Generated clock skew (alpha): " << alpha << ", clock offset (beta): " << beta << std::endl;
-
 }
-
 
 void UwSyncREG::StateRxPacket(Packet *p)
 {
@@ -125,7 +122,6 @@ void UwSyncREG::StateRxPacket(Packet *p)
     }
 }
 
-
 void UwSyncREG::TransmittingToNodeREF(Packet *p)
 {
     hdr_SYNC *synch = HDR_SYNC(p);
@@ -136,7 +132,6 @@ void UwSyncREG::TransmittingToNodeREF(Packet *p)
 
     MMac::Mac2PhyStartTx(p);
 }
-
 
 void UwSyncREG::stateIdle(Packet *p)
 {
@@ -151,6 +146,20 @@ void UwSyncREG::stateIdle(Packet *p)
         }
         else if (pktid_ == 4)
         {
+            distance_between_nodes[0] = (((synch->ts_[1] - beta) / alpha) - synch->ts_[0]) * soundspeed;
+            distance_between_nodes[1] = (synch->ts_[3] - ((synch->ts_[2] - beta) / alpha)) * soundspeed;
+
+            std::cout << "Distance between node 0 and node 1: " << distance_between_nodes[0] << " meter" << std::endl;
+            std::cout << "Distance between node 3 and node 4: " << distance_between_nodes[1] << " meter" << std::endl;
+
+
+            avaragespeed = (distance_between_nodes[1] -distance_between_nodes[0])/((((synch->ts_[2] - beta) / alpha) - synch->ts_[0])); 
+
+            std::cout << "Average speed is: " << avaragespeed << " m/s" << std::endl;
+
+
+            
+            // Send received timestamp
             sendReceivedTimestamp(p);
         }
         else
