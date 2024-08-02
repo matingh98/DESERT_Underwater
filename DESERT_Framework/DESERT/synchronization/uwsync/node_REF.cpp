@@ -54,11 +54,9 @@ public:
         return (new UwSyncREF());
     }
 } class_module_uwsync_ref;
-UwSyncREF::UwSyncREF() : MMac(), pktid_(0), start_time(0), stop_time(1001)
+UwSyncREF::UwSyncREF() : MMac(), pktid_(0)
 {
     std::cout << "UwDSync_A constructor called" << std::endl;
-    bind("start_time_", (double *)&start_time);
-    bind("stop_time_", (double *)&stop_time);
     std::fill(std::begin(ts_), std::end(ts_), 0.0); // Initialize ts_ to 0
 }
 
@@ -93,6 +91,8 @@ void UwSyncREF::initPkt()
 
     synch->ID() = pktid_;
     std::cout << "Initializing packet with ID: " << synch->ID() << std::endl;
+
+
     ch->size() = sizeof(hdr_SYNC);
     stateIdle(p);
 }

@@ -1,0 +1,238 @@
+Alpha: 1.0000948201805329
+Beta: 2.1387108262342913
+warning: no class variable Module/UnderwaterChannel::propSpeed_
+
+	see tcl-object.tcl in tclcl for info about this warning.
+
+UwDSync_A constructor called
+warning: no class variable Module/UW/SYNC/REF::debug_
+
+	see tcl-object.tcl in tclcl for info about this warning.
+
+SYNC id 0
+warning: no class variable Module/UW/PHYSICAL::TxPower_
+
+	see tcl-object.tcl in tclcl for info about this warning.
+
+warning: no class variable Module/UW/PHYSICAL::NoiseSPD_
+
+warning: no class variable Module/UW/PHYSICAL::PER_target_
+
+warning: no class variable Module/UW/PHYSICAL::RxSnrPenalty_dB_
+
+warning: no class variable Module/UW/PHYSICAL::TxSPLMargin_dB_
+
+warning: no class variable Module/UW/PHYSICAL::ConsumedEnergy_
+
+Node 1 fully initialized
+UwSyncREG constructor called
+warning: no class variable Module/UW/SYNC/REG::debug_
+
+	see tcl-object.tcl in tclcl for info about this warning.
+
+SYNC id 0
+warning: no class variable Module/UW/PHYSICAL::TxPower_
+
+	see tcl-object.tcl in tclcl for info about this warning.
+
+warning: no class variable Module/UW/PHYSICAL::NoiseSPD_
+
+warning: no class variable Module/UW/PHYSICAL::PER_target_
+
+warning: no class variable Module/UW/PHYSICAL::RxSnrPenalty_dB_
+
+warning: no class variable Module/UW/PHYSICAL::TxSPLMargin_dB_
+
+warning: no class variable Module/UW/PHYSICAL::ConsumedEnergy_
+
+Node 2 fully initialized
+
+Starting Simulation
+
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 0 59 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 100
+-----------------------------------------------------------------
+Current simulation time: 100 s
+Received Time            : 0 0 0 0 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 0 59 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 0 59 40 2 db 62 3b a8 cc 59 40 55 3c d5 b8 82 66 64 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 0 59 40 2 db 62 3b a8 cc 59 40 55 3c d5 b8 82 66 64 40 db 4a 2a 9c 2a 43 64 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.2135638731085692 meter
+Distance between node 3 and node 4: 1574.2135638730446772 meter
+Average speed is: -1.0465610401608878915e-12 m/s
+A: 262.09895141849733591
+Y: 266.40122534085691086
+lambda: 1.0164146933784945492
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 0 69 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 200
+-----------------------------------------------------------------
+Current simulation time: 200 s
+Received Time            : 100 103.198 163.203 162.099 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 0 69 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 0 69 40 8c 1b ed ca a1 66 69 40 2f 75 8 33 68 73 70 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 0 69 40 8c 1b ed ca a1 66 69 40 2f 75 8 33 68 73 70 40 6d 25 15 4e 95 61 70 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.2135638730446772 meter
+Distance between node 3 and node 4: 1574.213563873087196 meter
+Average speed is: 6.9646588793624993451e-13 m/s
+A: 462.09895141849744959
+Y: 466.42018937696360581
+lambda: 1.0093513260421851374
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 c0 72 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 300
+-----------------------------------------------------------------
+Current simulation time: 300 s
+Received Time            : 200 203.207 263.213 262.099 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 c0 72 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 c0 72 40 cc 64 14 bc 77 f3 72 40 36 4c a6 9 8f b3 76 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 c0 72 40 cc 64 14 bc 77 f3 72 40 36 4c a6 9 8f b3 76 40 6e 25 15 4e 95 a1 76 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.213563873087196 meter
+Distance between node 3 and node 4: 1574.213563873087196 meter
+Average speed is: 0 m/s
+A: 662.09895141849744959
+Y: 666.43915341307013023
+lambda: 1.006555216535646391
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 0 79 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 400
+-----------------------------------------------------------------
+Current simulation time: 400 s
+Received Time            : 300 303.217 363.222 362.099 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 0 79 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 0 79 40 d2 3b b2 92 9e 33 79 40 3c 23 44 e0 b5 f3 7c 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 0 79 40 d2 3b b2 92 9e 33 79 40 3c 23 44 e0 b5 f3 7c 40 6e 25 15 4e 95 e1 7c 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.213563873087196 meter
+Distance between node 3 and node 4: 1574.213563873087196 meter
+Average speed is: 0 m/s
+A: 862.09895141849744959
+Y: 866.45811744917671149
+lambda: 1.0050564567135904515
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 40 7f 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 500
+-----------------------------------------------------------------
+Current simulation time: 500 s
+Received Time            : 400 403.226 463.232 462.099 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 40 7f 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 40 7f 40 d8 12 50 69 c5 73 7f 40 21 fd 70 5b ee 99 81 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 40 7f 40 d8 12 50 69 c5 73 7f 40 21 fd 70 5b ee 99 81 40 b8 92 a a7 ca 90 81 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.213563873087196 meter
+Distance between node 3 and node 4: 1574.2135638731724612 meter
+Average speed is: 1.3966561923855252426e-12 m/s
+A: 1062.098951418498018
+Y: 1066.4770814852836338
+lambda: 1.0041221489400193878
+Initializing packet with ID: 0
+Entering stateIdle with pktid: 0
+Calling TransmittingToNodeREG for pktid 0
+Before transmit packet ID: 0
+After packet ID: 1
+Packet before transmission: 0 0 0 0 0 c0 82 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Transmitting packet of size: 40
+-----------------------------------------------------------------
+Intermediate results at time 600
+-----------------------------------------------------------------
+Current simulation time: 600 s
+Received Time            : 500 503.236 563.241 562.099 
+-----------------------------------------------------------------
+recieved ID: 1
+Packet on reception: 0 0 0 0 0 c0 82 40 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 
+Received from Node REF Packet ID 1 received from node Reference
+Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Receiving ID: 3
+Packet on reception: 0 0 0 0 0 c0 82 40 ef f4 f6 1f f6 d9 82 40 a4 e8 bf c6 1 ba 84 40 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 
+Received from Node REG Entering stateIdle with pktid: 3
+Calling RxPacket for pktid 3
+Transmitting packet of size: 40
+recieved ID: 4
+Packet on reception: 0 0 0 0 0 c0 82 40 ef f4 f6 1f f6 d9 82 40 a4 e8 bf c6 1 ba 84 40 b8 92 a a7 ca b0 84 40 4 0 0 0 0 0 0 0 
+Received from Node REF Distance between node 0 and node 1: 1574.2135638731724612 meter
+Distance between node 3 and node 4: 1574.2135638731724612 meter
+Average speed is: 0 m/s
+A: 1262.0989514184975633
+Y: 1266.4960455213899877
+lambda: 1.0034839535346657957
+-----------------------------------------------------------------
+Simulation summary
+-----------------------------------------------------------------
+Total simulation time    : 1000 s
+Number of nodes          : 2
+Received Time            : 600 603.245 663.251 662.099 
+-----------------------------------------------------------------

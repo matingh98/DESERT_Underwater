@@ -43,6 +43,7 @@
 #include <sys/time.h>
 #include <iostream>
 #include <random>
+#include <iomanip>
 
 static class UwSyncREG_Class : public TclClass
 {
@@ -54,9 +55,11 @@ public:
     }
 } class_module_uwsync_reg;
 
-UwSyncREG::UwSyncREG() : MMac(), alpha(0), beta(0), soundspeed(1500),avaragespeed(1)
+UwSyncREG::UwSyncREG() : MMac(), soundspeed(1500),avaragespeed(1),A(0),Y(0),lambda(0), alpha(1.0), beta(0.0) 
 {
     std::cout << "UwSyncREG constructor called" << std::endl;
+    bind("alpha_", (double *)&alpha); 
+    bind("beta_", (double *)&beta);   
 }
 
 UwSyncREG::~UwSyncREG() {}
@@ -89,13 +92,9 @@ int UwSyncREG::crLayCommand(ClMessage *m)
 
 void UwSyncREG::generateClockSkewAndOffset()
 {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis_alpha(1 - 100e-6, 1 + 100e-6);
-    std::uniform_real_distribution<> dis_beta(-5.0, 5.0);
-    alpha = dis_alpha(gen);
-    beta = dis_beta(gen);
-    std::cout << "Generated clock skew (alpha): " << alpha << ", clock offset (beta): " << beta << std::endl;
+    alpha = alpha;
+    beta = beta;
+    std::cout << std::setprecision(20) <<"Generated clock skew (alpha): " << alpha << ", clock offset (beta): " << beta << std::endl;
 }
 
 void UwSyncREG::StateRxPacket(Packet *p)
@@ -152,12 +151,19 @@ void UwSyncREG::stateIdle(Packet *p)
             std::cout << "Distance between node 0 and node 1: " << distance_between_nodes[0] << " meter" << std::endl;
             std::cout << "Distance between node 3 and node 4: " << distance_between_nodes[1] << " meter" << std::endl;
 
-
+  
             avaragespeed = (distance_between_nodes[1] -distance_between_nodes[0])/((((synch->ts_[2] - beta) / alpha) - synch->ts_[0])); 
 
             std::cout << "Average speed is: " << avaragespeed << " m/s" << std::endl;
 
-
+            A = (synch->ts_[3])+((synch->ts_[0])*(1+ avaragespeed/soundspeed));
+            Y = (synch->ts_[1])+((synch->ts_[2])*(1+ avaragespeed/soundspeed));
+            lambda = (1 / (A * A)) * A * Y;
+        
+            std::cout << "A: " << A << std::endl;
+            std::cout << "Y: " << Y << std::endl;
+            std::cout << "lambda: " << lambda << std::endl;
+   
             
             // Send received timestamp
             sendReceivedTimestamp(p);

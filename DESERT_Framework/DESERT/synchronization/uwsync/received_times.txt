@@ -1,0 +1,12 @@
+Received Time: Received Time            : 100 103.198 163.203 162.099 
+Received Time: Received Time            : 200 203.207 263.213 262.099 
+Received Time: Received Time            : 300 303.217 363.222 362.099 
+Received Time: Received Time            : 400 403.226 463.232 462.099 
+Received Time: Received Time            : 500 503.236 563.241 562.099 
+Received Time: Received Time            : 600 603.245 663.251 662.099 
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179
+Generated clock skew (alpha): Generated clock skew (alpha): 1.0000948201805328619, clock offset (beta): 2.1387108262342913179

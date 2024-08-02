@@ -107,10 +107,23 @@ if {$opt(bash_parameters)} {
 
 }
 
-global defaultRNG
-for {set k 0} {$k < $opt(rngstream)} {incr k} {
-    $defaultRNG next-substream
-}
+
+set alphaMin [expr {1 - 100.0/1e6}]
+set alphaMax [expr {1 + 100.0/1e6}]
+set betaMin -5.0
+set betaMax 5.0
+
+set seed [clock seconds]
+expr srand($seed)
+
+set alpha [expr {$alphaMin + (rand() * ($alphaMax - $alphaMin))}]
+set beta [expr {$betaMin + (rand() * ($betaMax - $betaMin))}]
+
+puts "Alpha: $alpha"
+puts "Beta: $beta"
+
+Module/UW/SYNC/REF set alpha_ $alpha
+Module/UW/SYNC/REF set beta_ $beta
 
 
 set opt(tracefilename) "./test_uwsync.tr"
@@ -155,8 +168,6 @@ set pos_y(2) 1000.0
 
 
 
-Module/UW/SYNC/REF set start_time_ $opt(starttime)
-Module/UW/SYNC/REF set stop_time_ $opt(stoptime)
 
 ################################
 # Procedure(s) to create nodes #
@@ -215,6 +226,9 @@ proc createNode { id } {
 
 }
 
+Module/UW/SYNC/REG set alpha_ $alpha
+Module/UW/SYNC/REG set beta_ $beta
+
 
 #################
 # Node Creation #
@@ -225,17 +239,36 @@ for {set id 1} {$id <= $opt(nn)} {incr id} {
     puts "Node $id fully initialized"
 }
 
+# Schedule transmissions
+$ns at 100 "$sync(1) transmit"
+$ns at 200 "$sync(1) transmit"
+$ns at 300 "$sync(1) transmit"
+$ns at 400 "$sync(1) transmit"
+$ns at 500 "$sync(1) transmit"
+$ns at 600 "$sync(1) transmit"
 
-$ns at 20 "$sync(1) transmit"
 
-#####################
-# Start/Stop Timers #
-#####################
-# # Set here the timers to start and/or stop modules (optional)
-# for {set ii 1} {$ii < $opt(nn)} {incr ii} {
-#     $ns at $opt(starttime) "$sync($ii) start"
-#     $ns at $opt(stoptime) "$sync($ii) stop"
-# }
+# Procedure to print intermediate results
+proc print_intermediate_results {time} {
+    global sync
+    puts "-----------------------------------------------------------------"
+    puts "Intermediate results at time $time"
+    puts "-----------------------------------------------------------------"
+    puts "Current simulation time: $time s"
+    if {[info exists sync(2)]} {
+        puts "Received Time            : [$sync(2) get_timestamp]"
+    }
+    puts "-----------------------------------------------------------------"
+}
+
+# Schedule intermediate results printing
+$ns at 100 "print_intermediate_results 100"
+$ns at 200 "print_intermediate_results 200"
+$ns at 300 "print_intermediate_results 300"
+$ns at 400 "print_intermediate_results 400"
+$ns at 500 "print_intermediate_results 500"
+$ns at 600 "print_intermediate_results 600"
+
 
 ###################
 # Final Procedure #
@@ -253,20 +286,18 @@ proc finish {} {
         puts "Total simulation time    : [expr $opt(stoptime)-$opt(starttime)] s"
         puts "Number of nodes          : $opt(nn)"
         if {[info exists sync(2)]} {
-            puts "Received Time            : [$sync(2) get_timestamp]"}
-
-            puts "-----------------------------------------------------------------"
+            puts "Received Time            : [$sync(2) get_timestamp]"
         }
+        puts "-----------------------------------------------------------------"
     }
+}
 
-    ###################
-    # start simulation
-    ###################
-    if {$opt(verbose)} {
-        puts "\nStarting Simulation\n"
-    }
+###################
+# start simulation
+###################
+if {$opt(verbose)} {
+    puts "\nStarting Simulation\n"
+}
+$ns at [expr $opt(stoptime) + 50.0] "finish; $ns halt"
 
-    $ns at [expr $opt(stoptime) + 50.0] "finish; $ns halt"
-
-    $ns run
-
+$ns run

@@ -86,7 +86,7 @@ public:
 
         virtual void BackoffTimer()
         {
-            left_duration = 30.0;   // Set the backoff timer for 10 seconds
+            left_duration = 60.0;   // Set the backoff timer for 10 seconds
             resched(left_duration); // Schedule the timer to expire after 10 seconds
         }
 
@@ -104,11 +104,14 @@ public:
 private:
     int pktid_; /**< Packet ID */
     double receivedTimeStamp[4];
-    double alpha; // Clock skew
-    double beta;  // Clock offset
     double soundspeed;
     double distance_between_nodes[2];
     double avaragespeed;
+    double A;
+    double Y;
+    double lambda;
+    double alpha;
+	double beta;
 
 };
 
